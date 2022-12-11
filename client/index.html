@@ -20,8 +20,8 @@ textarea{font-family:"Cascadia code"; font-size:14px}
 <script src=""></script>
 <body>
 <div id="app">
-<form action="index.html" target="output" id="input" method="get">
-<textarea id="source_editor" name="q">
+<form action="index.html" target="output" id="input" method="post" enctype="multipart/form-data">
+<textarea id="source_editor" name="source">
 #include "devbench.hpp"
 
 int main()
