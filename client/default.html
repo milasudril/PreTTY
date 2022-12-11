@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<title>Devbench: no output</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="">
+<style>
+*{font-family:"Andika"}
+code{font-family:"Cascadia code"; font-size:14px}
+</style>
+<script src=""></script>
+<body>
+
+<h1>Devbench</h1>
+<p>Write some code in the left window. Use <code>devbench::submit_result</code> to output the result. Supported overloads:</p>
+
+<ul>
+<li><code>devbench::submit_result(std::string const&amp;)</code></li>
+<li><code>devbench::submit_result(std::span&lt;std::pair&lt;float, float&gt;&gt; const&amp;, devbench::table_tag)</code></li>
+<li><code>devbench::submit_result(std::span&lt;std::pair&lt;float, float&gt;&gt; const&amp;, devbench::curve_tag)</code></li>
+</ul>
+
+</body>
+</html>
