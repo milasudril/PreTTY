@@ -22,11 +22,21 @@ textarea{font-family:"Cascadia code"; font-size:14px}
 <div id="app">
 <form action="index.html" target="output" id="input" method="post" enctype="multipart/form-data">
 <textarea id="source_editor" name="source">
-#include "devbench.hpp"
+#include <cstdio>
+
+extern char** environ;
 
 int main()
 {
-  devbench::submit_result("Hello, world");
+  puts("<p>These are all environment variables that has been set before running this program:</p>");
+  auto env = environ;
+  puts("<ul>");
+  while(*env != nullptr)
+  {
+    printf("<li>%s</li>\n", *env);
+    ++env;
+  }
+  puts("</ul>");
 }
 </textarea>
 <p id="controls"><input type="Submit" value="Build and run"> <a href="default.html" target="output">Show help page</a></p>
