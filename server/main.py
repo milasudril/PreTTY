@@ -26,14 +26,14 @@ def compile_and_execute(source_code, output_stream):
 	template = Template('''<!DOCTYPE html>
 <html>
 <head>
-<title>Devbench output</title>
+<title>PreTTY output</title>
 <style>
 *{font-family:"Andika"}
 code,pre{font-family:"Cascadia code"; font-size:14px}
 </style>
 </head>
 <body>
-<h1>Devbench output</h1>
+<h1>PreTTY output</h1>
 <section>
 <h1>Compiler output</h1>
 $compiler_output
