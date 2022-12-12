@@ -13,7 +13,6 @@ import tempfile
 import subprocess
 import html
 
-PORT = 8001
 server_dir = Path(__file__).parents[1] / 'client'
 
 def escape_html(str):
@@ -115,10 +114,10 @@ def create_socket(listen_address, handler):
 			else:
 				port = 65535
 
-
 socket, port = create_socket('127.0.0.1', HttpReqHandler)
 with socket as httpd:
 	print("serving at port", port)
+	browser = subprocess.run(['xdg-open', 'http://localhost:%d'%port])
 	while True:
 		sock = httpd.get_request()
 		if httpd.verify_request(sock[0], sock[1]) == False:
@@ -126,3 +125,4 @@ with socket as httpd:
 			continue
 
 		_thread.start_new_thread(httpd.process_request, (sock[0], sock[1]))
+	exit(browser.returncode)
