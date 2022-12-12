@@ -103,8 +103,22 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 
 handler = HttpReqHandler
 
-with socketserver.TCPServer(("127.0.0.1", PORT), handler) as httpd:
-	print("serving at port", PORT)
+def create_socket(listen_address, handler):
+	port = 65535
+	while True:
+		try:
+			return (socketserver.TCPServer((listen_address, port), handler), port)
+
+		except OSError as e:
+			if port > 49152:
+				port = port - 1
+			else:
+				port = 65535
+
+
+socket, port = create_socket('127.0.0.1', HttpReqHandler)
+with socket as httpd:
+	print("serving at port", port)
 	while True:
 		sock = httpd.get_request()
 		if httpd.verify_request(sock[0], sock[1]) == False:
