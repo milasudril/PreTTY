@@ -71,15 +71,21 @@ function source_editor_key_handler(e)
 
   if(e.key === "Enter" && e.ctrlKey)
   {
-    document.getElementById("build-and-run").click();
+    document.getElementById("build_and_run").click();
   }
 }
 
+function set_panel_size(e)
+{
+  console.log("Hej");
+  document.getElementById("source_editor").style.width = "50%";
+}
+
 </script>
-<body>
+<body onload="set_panel_size(event)">
 <div id="app">
 <form action="/formaction" target="output" id="actions" method="post" enctype="multipart/form-data">
-<input type="submit" id="build-and-run" value="Build and run">
+<input type="submit" id="build_and_run" value="Build and run">
 </form>
 
 <div id="main">
