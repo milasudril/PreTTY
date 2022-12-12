@@ -2,6 +2,7 @@
 
 import http.server
 import socketserver
+import socket
 from pathlib import Path
 import os
 import _thread
@@ -75,6 +76,8 @@ $application_output
 
 		output_stream.write(res.encode('utf-8'))
 
+do_exit = False
+
 class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 	def do_GET(self):
 		if self.path == '/':
@@ -84,7 +87,6 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 		else:
 			filename = Path(urllib.parse.unquote(self.path)).name
 			try:
-				print(server_dir / filename)
 				self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' % self.request_version).encode('utf-8'))
 				with open(server_dir / filename, 'rb') as content_file:
 					self.wfile.write(content_file.read())
@@ -92,15 +94,20 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 				super(HttpReqHandler, self).do_GET()
 
 	def do_POST(self):
-		ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
-		pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
-		pdict['CONTENT-LENGTH'] = int(self.headers.get('Content-length'))
-		parsed_data = cgi.parse_multipart(self.rfile, pdict)
-		self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' %
-					self.request_version).encode('utf-8'))
-		compile_and_execute(parsed_data['source'][0], self.wfile)
+		if self.path == '/shutdown':
+			global do_exit
+			do_exit = True
+			with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+				client.connect(('127.0.0.1', self.port))
 
-handler = HttpReqHandler
+		elif self.path == '/formaction':
+			ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
+			pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
+			pdict['CONTENT-LENGTH'] = int(self.headers.get('Content-length'))
+			parsed_data = cgi.parse_multipart(self.rfile, pdict)
+			self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' %
+						self.request_version).encode('utf-8'))
+			compile_and_execute(parsed_data['source'][0], self.wfile)
 
 def create_socket(listen_address, handler):
 	port = 65535
@@ -114,15 +121,23 @@ def create_socket(listen_address, handler):
 			else:
 				port = 65535
 
-socket, port = create_socket('127.0.0.1', HttpReqHandler)
-with socket as httpd:
-	print("serving at port", port)
-	browser = subprocess.run(['xdg-open', 'http://localhost:%d'%port])
-	while True:
-		sock = httpd.get_request()
-		if httpd.verify_request(sock[0], sock[1]) == False:
-			print("Invalid req")
-			continue
+def run():
+	handler = HttpReqHandler
+	server, port = create_socket('127.0.0.1', handler)
+	handler.port = port
+	with server as httpd:
+		browser = subprocess.run(['xdg-open', 'http://localhost:%d'%port])
+		global do_exit
+		while not do_exit:
+			sock = httpd.get_request()
+			if do_exit:
+				return browser.returncode
+			if httpd.verify_request(sock[0], sock[1]) == False:
+				print("Invalid req")
+				continue
 
-		_thread.start_new_thread(httpd.process_request, (sock[0], sock[1]))
-	exit(browser.returncode)
+			_thread.start_new_thread(httpd.process_request, (sock[0], sock[1]))
+		return browser.returncode
+
+if __name__ == '__main__':
+	exit(run())

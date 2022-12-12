@@ -17,10 +17,18 @@ textarea{font-family:"Cascadia code"; font-size:14px}
 #controls{text-align:center}
 
 </style>
-<script src=""></script>
+<script>
+window.onbeforeunload = function()
+{
+  var req = new XMLHttpRequest();
+  req.open("POST", "/shutdown");
+  req.setRequestHeader("Content-Type", "application/json");
+  req.send(JSON.stringify({}));
+}
+</script>
 <body>
 <div id="app">
-<form action="index.html" target="output" id="input" method="post" enctype="multipart/form-data">
+<form action="/formaction" target="output" id="input" method="post" enctype="multipart/form-data">
 <textarea id="source_editor" name="source">
 #include <cstdio>
 
