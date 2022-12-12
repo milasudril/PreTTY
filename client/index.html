@@ -5,16 +5,47 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="">
 <style>
+*{font-family:"Andika"}
+
 *{box-sizing:border-box}
+
 html{height:100%; margin:0; padding:0}
 body{height:100%; margin:0; padding:0}
-#app{display:flex; flex-flow:row; width:100%; height:100%}
-#input{flex:auto; height:100%; width:50%; resize: horizontal}
-#source_editor{width:100%; height:90%}
-#output_frame{flex:auto; height:100%; width:50%; resize: horizontal}
-*{font-family:"Andika"}
+
+#app{width:100%; height:100%; display:grid; grid-template-rows: max-content 1fr;}
+#actions{width:100%}
+#main
+{
+  display:flex;
+  height: 100%;
+}
+
+#source_editor
+{
+  width: max-content;
+  border: 1px solid;
+  overflow: auto;
+  padding: 1rem;
+
+  flex: 0 1 auto;
+  resize: horizontal;
+  white-space: pre;
+}
+
+#output_frame
+{
+  min-width: min-content;
+  width: max-content;
+  border: 1px solid;
+  overflow: auto;
+  padding: 1rem;
+  resize: horizontal;
+
+  flex: 1 0 auto;
+}
+
+
 textarea{font-family:"Cascadia code"; font-size:14px}
-#controls{text-align:center}
 </style>
 <script>
 window.onbeforeunload = function()
@@ -27,8 +58,12 @@ window.onbeforeunload = function()
 </script>
 <body>
 <div id="app">
-<form action="/formaction" target="output" id="input" method="post" enctype="multipart/form-data">
-<textarea id="source_editor" name="source">
+<form action="/formaction" target="output" id="actions" method="post" enctype="multipart/form-data">
+<input type="Submit" value="Build and run">
+</form>
+
+<div id="main">
+<textarea id="source_editor" name="source" form="actions">
 #include <cstdio>
 
 extern char** environ;
@@ -46,11 +81,10 @@ int main()
   puts("</ul>");
 }
 </textarea>
-<p id="controls"><input type="Submit" value="Build and run"> <a href="default.html" target="output">Show help page</a></p>
-</form>
 
 <iframe name="output" src="default.html" id="output_frame">
 </iframe>
+</div>
 </div>
 </body>
 </html>
