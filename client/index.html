@@ -13,7 +13,7 @@ html{height:100%; margin:0; padding:0}
 body{height:100%; margin:0; padding:0}
 
 #app{width:100%; height:100%; display:grid; grid-template-rows: max-content 1fr;}
-#actions{width:100%}
+#actions{width:100%; padding: 0.5rem}
 #main
 {
   display:flex;
@@ -26,11 +26,10 @@ body{height:100%; margin:0; padding:0}
   border: 1px solid;
   overflow: auto;
   padding: 0.5rem;
-
+  margin: 0px;
   flex: 0 1 auto;
   resize: horizontal;
   white-space: pre;
-
   tab-size: 4;
 }
 
@@ -38,11 +37,11 @@ body{height:100%; margin:0; padding:0}
 {
   min-width: min-content;
   width: max-content;
+  margin: 0px;
   border: 1px solid;
   overflow: auto;
   padding: 0rem;
   resize: horizontal;
-
   flex: 1 0 auto;
 }
 
