@@ -34,8 +34,9 @@ def compile_and_execute(source_code, output_stream):
 <title>PreTTY output</title>
 <link rel="stylesheet" href="https://latex.now.sh/style.min.css" />
 <style>
+body{max-width:100%; line-height:1.5}
 *{font-family:"Andika";}
-code,pre{font-family:"Cascadia code"; font-size:1.1rem}
+code,pre{font-family:"Cascadia code"}
 </style>
 </head>
 <body>
