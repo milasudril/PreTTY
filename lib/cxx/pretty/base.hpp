@@ -19,6 +19,37 @@ namespace pretty
 		});
 	}
 
+	template<class T>
+	concept is_pair = requires(T x)
+	{
+		{x.first};
+		{x.second};
+	};
+
+	template<std::ranges::input_range R, class ... PrintParams>
+	requires(!is_pair<std::ranges::range_value_t<R>>)
+	void print(R&& range, PrintParams&&... params)
+	{
+		std::ranges::for_each(range, [...params=std::forward<PrintParams>(params)](auto const& item){
+			print(item, params...);
+		});
+	}
+
+	template<std::ranges::input_range R, class ... PrintParams>
+	requires(is_pair<std::ranges::range_value_t<R>>)
+	void print(R&& range, PrintParams&&... params)
+	{
+		puts("<table><tr><th>First</th><th>Second</th></tr>");
+		std::ranges::for_each(range, [...params=std::forward<PrintParams>(params)](auto const& item){
+			puts("<tr><td>");
+			print(item.first, params...);
+			puts("</td><td>");
+			print(item.second, params...);
+			puts("</td></tr>");
+		});
+		puts("</table>");
+	}
+
 	inline void print(char ch)
 	{
 		switch(ch)
