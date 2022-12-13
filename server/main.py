@@ -15,7 +15,7 @@ import subprocess
 import html
 import signal
 
-server_dir = Path(__file__).parents[1] / 'client'
+app_dir = Path(__file__).parents[1]
 
 def escape_html(str):
 	return html.escape(str)
@@ -54,8 +54,10 @@ $error_msg
 		with open(src_file_name, 'wb') as src_file:
 			src_file.write(source_code.encode('utf-8'))
 
+		cxx_inc_dir = app_dir / 'lib' / 'cxx'
 		exec_name = temp_dir + '/src.out'
 		compiler_result = subprocess.run(['g++',
+			('-I%s'%cxx_inc_dir),
 			'-std=c++20',
 			'-O3',
 			'-ffast-math',
@@ -92,12 +94,12 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 		try:
 			if self.path == '/':
 				self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' % self.request_version).encode('utf-8'))
-				with open(server_dir / 'index.html', 'rb') as content_file:
+				with open(app_dir / 'client' / 'index.html', 'rb') as content_file:
 					self.wfile.write(content_file.read())
 			else:
 				filename = Path(urllib.parse.unquote(self.path)).name
 				self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' % self.request_version).encode('utf-8'))
-				with open(server_dir / filename, 'rb') as content_file:
+				with open(app_dir / 'client' / filename, 'rb') as content_file:
 					self.wfile.write(content_file.read())
 		except:
 			pass
