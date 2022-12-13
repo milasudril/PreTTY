@@ -132,9 +132,9 @@ namespace pretty
 
 	inline void print(section const& obj)
 	{
-		print_raw("<h1>");
+		print_raw("<h3>");
 		print(obj.get());
-		print_raw("</h1>");
+		print_raw("</h3>");
 	}
 
 	struct subsection:private std::vector<inline_element>
@@ -147,9 +147,9 @@ namespace pretty
 
 	inline void print(subsection const& obj)
 	{
-		print_raw("<h2>");
+		print_raw("<h4>");
 		print(obj.get());
-		print_raw("</h2>");
+		print_raw("</h4>");
 	}
 }
 

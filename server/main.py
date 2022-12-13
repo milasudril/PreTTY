@@ -28,22 +28,24 @@ def make_error_msg(signo):
 
 def compile_and_execute(source_code, output_stream):
 	template = Template('''<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <title>PreTTY output</title>
+<link rel="stylesheet" href="https://latex.now.sh/style.min.css" />
 <style>
-*{font-family:"Andika"}
-code,pre{font-family:"Cascadia code"; font-size:14px}
+*{font-family:"Andika";}
+code,pre{font-family:"Cascadia code"; font-size:1.1rem}
 </style>
 </head>
 <body>
 <h1>PreTTY output</h1>
 <section>
-<h1>Compiler output</h1>
+<h2>Compiler output</h2>
 $compiler_output
 </section>
 <section>
-<h1>Application output</h1>
+<h2>Application output</h2>
 $application_output
 $error_msg
 </section>
