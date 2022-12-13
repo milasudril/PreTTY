@@ -13,6 +13,7 @@ import urllib.parse
 import tempfile
 import subprocess
 import html
+import signal
 
 server_dir = Path(__file__).parents[1] / 'client'
 
@@ -21,6 +22,9 @@ def escape_html(str):
 
 def fixed_width(str):
 	return '<pre>\n' + escape_html(str) + '</pre>\n'
+
+def make_error_msg(signo):
+	return '<div class="app_error">%s</div>'%signal.strsignal(signo);
 
 def compile_and_execute(source_code, output_stream):
 	template = Template('''<!DOCTYPE html>
@@ -41,6 +45,7 @@ $compiler_output
 <section>
 <h1>Application output</h1>
 $application_output
+$error_msg
 </section>
 </body>
 ''')
@@ -64,15 +69,19 @@ $application_output
 			capture_output=True)
 		application_output = 'Compilation failed'
 		compiler_output = 'Compilation succeeded'
+		error_msg = ''
 
 		if compiler_result.returncode == 0:
 			exec_result = subprocess.run([exec_name], capture_output=True)
 			application_output = exec_result.stdout.decode('utf-8')
+			if exec_result.returncode < 0:
+				error_msg = make_error_msg(-exec_result.returncode)
 		else:
 			compiler_output = fixed_width(compiler_result.stderr.decode('utf-8'))
 
 		res = template.substitute(compiler_output = compiler_output,
-			application_output = application_output)
+			application_output = application_output,
+			error_msg = error_msg)
 
 		output_stream.write(res.encode('utf-8'))
 
@@ -80,34 +89,37 @@ do_exit = False
 
 class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 	def do_GET(self):
-		if self.path == '/':
-			self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' % self.request_version).encode('utf-8'))
-			with open(server_dir / 'index.html', 'rb') as content_file:
-				self.wfile.write(content_file.read())
-		else:
-			filename = Path(urllib.parse.unquote(self.path)).name
-			try:
+		try:
+			if self.path == '/':
+				self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' % self.request_version).encode('utf-8'))
+				with open(server_dir / 'index.html', 'rb') as content_file:
+					self.wfile.write(content_file.read())
+			else:
+				filename = Path(urllib.parse.unquote(self.path)).name
 				self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' % self.request_version).encode('utf-8'))
 				with open(server_dir / filename, 'rb') as content_file:
 					self.wfile.write(content_file.read())
-			except:
-				super(HttpReqHandler, self).do_GET()
+		except:
+			pass
 
 	def do_POST(self):
-		if self.path == '/shutdown':
-			global do_exit
-			do_exit = True
-			with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-				client.connect(('127.0.0.1', self.port))
+		try:
+			if self.path == '/shutdown':
+				global do_exit
+				do_exit = True
+				with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+					client.connect(('127.0.0.1', self.port))
 
-		elif self.path == '/formaction':
-			ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
-			pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
-			pdict['CONTENT-LENGTH'] = int(self.headers.get('Content-length'))
-			parsed_data = cgi.parse_multipart(self.rfile, pdict)
-			self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' %
-						self.request_version).encode('utf-8'))
-			compile_and_execute(parsed_data['source'][0], self.wfile)
+			elif self.path == '/formaction':
+				ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
+				pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
+				pdict['CONTENT-LENGTH'] = int(self.headers.get('Content-length'))
+				parsed_data = cgi.parse_multipart(self.rfile, pdict)
+				self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' %
+							self.request_version).encode('utf-8'))
+				compile_and_execute(parsed_data['source'][0], self.wfile)
+		except:
+			pass
 
 def create_socket(listen_address, handler):
 	port = 65535
