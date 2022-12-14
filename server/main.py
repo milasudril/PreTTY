@@ -112,8 +112,6 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 			pdict['CONTENT-LENGTH'] = int(self.headers.get('Content-length'))
 			parsed_data = cgi.parse_multipart(self.rfile, pdict)
 
-			print(self.path)
-
 			if not 'api_key' in parsed_data:
 				self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
 				return

@@ -6,17 +6,29 @@
 #include <algorithm>
 #include <string>
 #include <variant>
+#include <limits>
+#include <charconv>
 
 namespace pretty
 {
 	inline void print(char ch);
 
-	template<std::ranges::input_range R, class ... PrintParams>
-	void print(R&& range, PrintParams&&... params)
+	template<std::integral T>
+	void print(T val)
 	{
-		std::ranges::for_each(range, [...params=std::forward<PrintParams>(params)](auto const& item){
-			print(item, params...);
-		});
+		static constexpr auto num_chars = std::numeric_limits<T>::digits10 + 3;
+		std::array<char, num_chars> buffer{};
+		std::to_chars(std::data(buffer), std::data(buffer) + std::size(buffer) - 1, val);
+		printf("<span class=\"number\">%s</span>", std::data(buffer));
+	}
+
+	template<std::floating_point T>
+	void print(T val)
+	{
+		static constexpr auto num_chars = std::numeric_limits<T>::digits10 + 5;
+		std::array<char, num_chars> buffer{};
+		std::to_chars(std::data(buffer), std::data(buffer) + std::size(buffer) - 1, val);
+		printf("<span class=\"number\">%s</span>", std::data(buffer));
 	}
 
 	template<class T>
@@ -26,25 +38,50 @@ namespace pretty
 		{x.second};
 	};
 
-	template<std::ranges::input_range R, class ... PrintParams>
+	template<std::ranges::input_range R>
 	requires(!is_pair<std::ranges::range_value_t<R>>)
-	void print(R&& range, PrintParams&&... params)
+	void print(R&& range);
+
+	template<std::ranges::input_range R>
+	requires(is_pair<std::ranges::range_value_t<R>>)
+	void print(R&& range);
+
+	void print(char const* c_str)
 	{
-		std::ranges::for_each(range, [...params=std::forward<PrintParams>(params)](auto const& item){
-			print(item, params...);
-		});
+		print(std::string_view{c_str});
 	}
 
-	template<std::ranges::input_range R, class ... PrintParams>
+	template<class ... T>
+	inline void print(std::variant<T...> const& val)
+	{
+		std::visit([](auto const& item){ print(item);}, val);
+	}
+
+	template<class First, class Second>
+	void print(std::pair<First, Second> const& val)
+	{
+		puts("<table class=\"pair\">");
+		puts("<tr><td>");print(val.first);puts("</td><td>");print(val.second);puts("</td></tr>");
+		puts("</table>");
+	}
+
+	template<std::ranges::input_range R>
+	requires(!is_pair<std::ranges::range_value_t<R>>)
+	void print(R&& range)
+	{
+		std::ranges::for_each(range, [](auto const& item){ print(item); });
+	}
+
+	template<std::ranges::input_range R>
 	requires(is_pair<std::ranges::range_value_t<R>>)
-	void print(R&& range, PrintParams&&... params)
+	void print(R&& range)
 	{
 		puts("<table><tr><th>First</th><th>Second</th></tr>");
-		std::ranges::for_each(range, [...params=std::forward<PrintParams>(params)](auto const& item){
+		std::ranges::for_each(range, [](auto const& item){
 			puts("<tr><td>");
-			print(item.first, params...);
+			print(item.first);
 			puts("</td><td>");
-			print(item.second, params...);
+			print(item.second);
 			puts("</td></tr>");
 		});
 		puts("</table>");
@@ -77,7 +114,7 @@ namespace pretty
 		std::ranges::for_each(str, [](auto item){putchar(item);});
 	}
 
-		struct emph
+	struct emph
 	{
 		std::string value;
 	};
@@ -128,14 +165,6 @@ namespace pretty
 		print_raw("</samp>");
 	};
 
-	template<class ... T, class ... PrintArgs>
-	inline void print(std::variant<T...> const& val, PrintArgs&& ... args)
-	{
-		std::visit([...params=std::forward<PrintArgs>(args)](auto const& item){
-			print(item, params...);
-		}, val);
-	}
-
 	using inline_element = std::variant<std::string_view, emph, link, code, samp>;
 
 	struct paragraph:private std::vector<inline_element>
@@ -183,5 +212,8 @@ namespace pretty
 		print_raw("</h4>");
 	}
 }
+
+#define PRETTY_PRINT_EXPR(expr) \
+pretty::print(std::pair{pretty::code{#expr}, expr})
 
 #endif
