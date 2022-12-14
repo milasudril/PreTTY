@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>PreTTY Workbench</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="">
 <style>
 *{font-family:"Andika"}
 
@@ -87,6 +86,7 @@ function set_panel_size(e)
 <div id="app">
 <form action="/formaction" target="output" id="actions" method="post" enctype="multipart/form-data">
 <input type="submit" id="build_and_run" value="Build and run">
+<input type="hidden" name="api_key" value="$api_key">
 </form>
 
 <div id="main">

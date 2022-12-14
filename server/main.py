@@ -14,6 +14,8 @@ import tempfile
 import subprocess
 import html
 import signal
+import secrets
+import template_file
 
 app_dir = Path(__file__).parents[1]
 
@@ -142,19 +144,27 @@ def run():
 	handler = HttpReqHandler
 	server, port = create_socket('127.0.0.1', handler)
 	handler.port = port
-	with server as httpd:
-		browser = subprocess.run(['xdg-open', 'http://localhost:%d'%port])
-		global do_exit
-		while not do_exit:
-			sock = httpd.get_request()
-			if do_exit:
-				return browser.returncode
-			if httpd.verify_request(sock[0], sock[1]) == False:
-				print("Invalid req")
-				continue
+	handler.api_key = secrets.token_hex()
 
-			_thread.start_new_thread(httpd.process_request, (sock[0], sock[1]))
-		return browser.returncode
+	with tempfile.TemporaryDirectory() as temp_dir:
+		login_page = temp_dir + '/login.html'
+		with open(login_page, 'wb') as login_page_file:
+			login_page_file.write(template_file.string_from_template_file(app_dir / 'client/login.html',
+				{'port':handler.port, 'api_key': handler.api_key}).encode('utf-8'))
+
+		with server as httpd:
+			browser = subprocess.run(['xdg-open', 'http://localhost:%d'%port])
+			global do_exit
+			while not do_exit:
+				sock = httpd.get_request()
+				if do_exit:
+					return browser.returncode
+				if httpd.verify_request(sock[0], sock[1]) == False:
+					print("Invalid req")
+					continue
+
+				_thread.start_new_thread(httpd.process_request, (sock[0], sock[1]))
+			return browser.returncode
 
 if __name__ == '__main__':
 	exit(run())
