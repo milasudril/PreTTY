@@ -4,10 +4,7 @@ import http.server
 import socketserver
 import socket
 from pathlib import Path
-import os
 import _thread
-import sys
-from string import Template
 import cgi
 import urllib.parse
 import tempfile
@@ -28,32 +25,7 @@ def fixed_width(str):
 def make_error_msg(signo):
 	return '<div class="app_error">%s</div>'%signal.strsignal(signo);
 
-def compile_and_execute(source_code, output_stream):
-	template = Template('''<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>PreTTY output</title>
-<link rel="stylesheet" href="https://latex.now.sh/style.min.css" />
-<style>
-body{max-width:100%; line-height:1.5}
-*{font-family:"Andika";}
-code,pre{font-family:"Cascadia code"}
-</style>
-</head>
-<body>
-<h1>PreTTY output</h1>
-<section>
-<h2>Compiler output</h2>
-$compiler_output
-</section>
-<section>
-<h2>Application output</h2>
-$application_output
-$error_msg
-</section>
-</body>
-''')
+def build_and_run(source_code, output_stream):
 	with tempfile.TemporaryDirectory() as temp_dir:
 		src_file_name = temp_dir + '/src.cpp'
 		with open(src_file_name, 'wb') as src_file:
@@ -86,45 +58,78 @@ $error_msg
 		else:
 			compiler_output = fixed_width(compiler_result.stderr.decode('utf-8'))
 
-		res = template.substitute(compiler_output = compiler_output,
-			application_output = application_output,
-			error_msg = error_msg)
+		res = template_file.string_from_template_file(app_dir / 'client/output.html',
+			{'compiler_output': compiler_output,
+			'application_output': application_output,
+			'error_msg': error_msg})
 
 		output_stream.write(res.encode('utf-8'))
 
 do_exit = False
 
+def shutdown(port):
+	print('Shutting down server')
+	global do_exit
+	do_exit = True
+	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+		client.connect(('127.0.0.1', port))
+
 class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 	def do_GET(self):
 		try:
-			if self.path == '/':
-				self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' % self.request_version).encode('utf-8'))
-				with open(app_dir / 'client' / 'index.html', 'rb') as content_file:
-					self.wfile.write(content_file.read())
-			else:
-				filename = Path(urllib.parse.unquote(self.path)).name
-				self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' % self.request_version).encode('utf-8'))
-				with open(app_dir / 'client' / filename, 'rb') as content_file:
-					self.wfile.write(content_file.read())
-		except:
-			pass
+			url = urllib.parse.urlparse(self.path)
+			path = url.path
+			params = dict(urllib.parse.parse_qsl(url.query))
+			if not 'api_key' in params:
+				self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
+				return
+
+			if params['api_key'] != self.api_key:
+				self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
+				return
+
+			if path == '/!shutdown':
+				shutdown(self.port)
+				return
+
+			if path == '/':
+				path = '/index.html'
+
+			src_file = app_dir / ('client' + path)
+
+			self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' % self.request_version).encode('utf-8'))
+
+			self.wfile.write(template_file.string_from_template_file(src_file,
+				{'port':self.port, 'api_key': self.api_key}).encode('utf-8'))
+
+		except Exception as exc:
+			print(exc)
 
 	def do_POST(self):
 		try:
-			if self.path == '/shutdown':
-				global do_exit
-				do_exit = True
-				with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-					client.connect(('127.0.0.1', self.port))
+			ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
+			pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
+			pdict['CONTENT-LENGTH'] = int(self.headers.get('Content-length'))
+			parsed_data = cgi.parse_multipart(self.rfile, pdict)
 
-			elif self.path == '/formaction':
-				ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
-				pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
-				pdict['CONTENT-LENGTH'] = int(self.headers.get('Content-length'))
-				parsed_data = cgi.parse_multipart(self.rfile, pdict)
+			print(self.path)
+
+			if not 'api_key' in parsed_data:
+				self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
+				return
+
+			if parsed_data['api_key'][0] != self.api_key:
+				self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
+				return
+
+			if self.path == '/shutdown':
+				shutdown(self.port)
+				return
+
+			if self.path == '/build_and_run':
 				self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' %
 							self.request_version).encode('utf-8'))
-				compile_and_execute(parsed_data['source'][0], self.wfile)
+				build_and_run(parsed_data['source'][0], self.wfile)
 		except:
 			pass
 
@@ -153,7 +158,7 @@ def run():
 				{'port':handler.port, 'api_key': handler.api_key}).encode('utf-8'))
 
 		with server as httpd:
-			browser = subprocess.run(['xdg-open', 'http://localhost:%d'%port])
+			browser = subprocess.run(['xdg-open', login_page])
 			global do_exit
 			while not do_exit:
 				sock = httpd.get_request()

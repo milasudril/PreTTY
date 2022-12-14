@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PreTTY Workbench</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>PreTTY Workbench</title>
 <style>
 *{font-family:"Andika"}
 
@@ -52,7 +53,7 @@ textarea{font-family:"Cascadia code"; font-size:14px}
 window.onbeforeunload = function()
 {
   var req = new XMLHttpRequest();
-  req.open("POST", "/shutdown");
+  req.open("GET", "/!shutdown?api_key=$api_key");
   req.setRequestHeader("Content-Type", "application/json");
   req.send(JSON.stringify({}));
 }
@@ -84,8 +85,9 @@ function set_panel_size(e)
 </head>
 <body onload="set_panel_size(event)">
 <div id="app">
-<form action="/formaction" target="output" id="actions" method="post" enctype="multipart/form-data">
-<input type="submit" id="build_and_run" value="Build and run">
+<form target="output" id="actions" method="post" enctype="multipart/form-data">
+<input type="submit" id="build_and_run" value="Build and run" formaction="/build_and_run">
+<input type="submit" id="shutdown" value="Shutdown" formaction="/shutdown">
 <input type="hidden" name="api_key" value="$api_key">
 </form>
 
@@ -101,7 +103,7 @@ int main()
 }
 </textarea>
 
-<iframe name="output" src="default.html" id="output_frame">
+<iframe name="output" src="default.html?api_key=$api_key" id="output_frame">
 </iframe>
 </div>
 </div>
