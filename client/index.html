@@ -202,13 +202,17 @@ int main()
 
 	print(pretty::paragraph{"The example above also shows that it is possible to use nested containers"});
 
-	print(pretty::paragraph{"An optional with no value"});
+	print(pretty::paragraph{"An optional may have a value"});
+
+	pretty::print(std::optional{"This optional has value"});
+
+	print(pretty::paragraph{"or not"});
 
 	pretty::print(std::optional&lt;std::string_view&gt;{});
 
-	print(pretty::paragraph{"An optional with value"});
+	print(pretty::paragraph{"A tuple is printed similarly to an ordered container"});
 
-	pretty::print(std::optional{"This optional has value"});
+	pretty::print(std::tuple{"Foo", "bar", 1.3, 1234});
 
 	print(pretty::subsection{"\"Debug\" output"});
 

@@ -16,6 +16,9 @@ namespace pretty
 
 	inline void print_raw(std::string_view str);
 
+	template<class T>
+	void print_list_element(T const& val);
+
 	template<std::integral T>
 	void print(T val);
 
@@ -29,11 +32,22 @@ namespace pretty
 		{x.second};
 	};
 
+	template<class T>
+	concept is_tuple = !is_pair<T> && requires(T x)
+	{
+		{std::get<0>(x)};
+		{std::tuple_size<T>::value};
+	};
+
 	template<class First, class Second>
 	void print(std::pair<First, Second> const& val);
 
 	template<class T>
 	void print(std::optional<T> const& x);
+
+	template<class T>
+	requires(is_tuple<T>)
+	void print(T const& x);
 
 	template<class ... T>
 	inline void print(std::variant<T...> const& val);
@@ -141,6 +155,25 @@ namespace pretty
 		{ print(*x); }
 		else
 		{ puts("<span class=\"empty\">(no value)</span>"); }
+	}
+
+	template<class T>
+	void print_list_element(T const& val)
+	{
+		print_raw("<li>");
+		print(val);
+		print_raw("</li>");
+	}
+
+	template<class T>
+	requires(is_tuple<T>)
+	void print(T const& x)
+	{
+		puts("<ol start=\"0\" class=\"range_content\">");
+		std::apply([](auto const&... args){
+			(print_list_element(args),...);
+		}, x);
+		puts("</ol>");
 	}
 
 #define PRETTY_PRINT_EXPR(expr) \
