@@ -16,8 +16,14 @@ namespace pretty
 
 	inline void print_raw(std::string_view str);
 
+	inline void print(std::string_view str);
+
+	inline void print(std::string const& str);
+
+	inline void print(char const* c_str);
+
 	template<class T>
-	void print_list_element(T const& val);
+	void print_list_item(T const& val);
 
 	template<std::integral T>
 	void print(T val);
@@ -60,13 +66,15 @@ namespace pretty
 	requires(is_pair<std::ranges::range_value_t<R>>)
 	void print(R&& range);
 
+
+
 	template<std::integral T>
 	void print(T val)
 	{
 		static constexpr auto num_chars = std::numeric_limits<T>::digits10 + 3;
 		std::array<char, num_chars> buffer{};
 		std::to_chars(std::data(buffer), std::data(buffer) + std::size(buffer) - 1, val);
-		printf("<span class=\"number\">%s</span>", std::data(buffer));
+		print(std::data(buffer));
 	}
 
 	template<std::floating_point T>
@@ -75,10 +83,20 @@ namespace pretty
 		static constexpr auto num_chars = std::numeric_limits<T>::digits10 + 5;
 		std::array<char, num_chars> buffer{};
 		std::to_chars(std::data(buffer), std::data(buffer) + std::size(buffer) - 1, val);
-		printf("<span class=\"number\">%s</span>", std::data(buffer));
+		print(std::data(buffer));
 	}
 
+	void print(std::string_view str)
+	{
+		std::ranges::for_each(str, [](auto x) {
+			print(x);
+		});
+	}
 
+	void print(std::string const& str)
+	{
+		print(std::string_view{str});
+	}
 
 	void print(char const* c_str)
 	{
@@ -99,11 +117,21 @@ namespace pretty
 		puts("</table>");
 	}
 
+	template<class T>
+	void print_list_item(T const& val)
+	{
+		print_raw("<li>");
+		print(val);
+		print_raw("</li>");
+	}
+
 	template<std::ranges::input_range R>
 	requires(!is_pair<std::ranges::range_value_t<R>>)
 	void print(R&& range)
 	{
-		std::ranges::for_each(range, [](auto const& item){ print(item); });
+		puts("<ol start=\"0\" class=\"range_content\">");
+		std::ranges::for_each(range, [](auto const& item){ print_list_item(item); });
+		puts("</ol>");
 	}
 
 	template<std::ranges::input_range R>
@@ -158,20 +186,12 @@ namespace pretty
 	}
 
 	template<class T>
-	void print_list_element(T const& val)
-	{
-		print_raw("<li>");
-		print(val);
-		print_raw("</li>");
-	}
-
-	template<class T>
 	requires(is_tuple<T>)
 	void print(T const& x)
 	{
 		puts("<ol start=\"0\" class=\"range_content\">");
 		std::apply([](auto const&... args){
-			(print_list_element(args),...);
+			(print_list_item(args),...);
 		}, x);
 		puts("</ol>");
 	}

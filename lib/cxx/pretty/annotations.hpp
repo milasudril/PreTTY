@@ -69,7 +69,9 @@ namespace pretty
 	inline void print(paragraph const& obj)
 	{
 		print_raw("<p>");
-		print(obj.get());
+		std::ranges::for_each(obj.get(), [](auto const& item) {
+			print(item);
+		});
 		print_raw("</p>");
 	}
 
@@ -84,7 +86,9 @@ namespace pretty
 	inline void print(section const& obj)
 	{
 		print_raw("<h3>");
-		print(obj.get());
+		std::ranges::for_each(obj.get(), [](auto const& item) {
+			print(item);
+		});
 		print_raw("</h3>");
 	}
 
@@ -99,7 +103,9 @@ namespace pretty
 	inline void print(subsection const& obj)
 	{
 		print_raw("<h4>");
-		print(obj.get());
+		std::ranges::for_each(obj.get(), [](auto const& item) {
+			print(item);
+		});
 		print_raw("</h4>");
 	}
 }
