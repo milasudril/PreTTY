@@ -39,10 +39,9 @@ input{margin-top:0.5rem; margin-bottom:0.5rem; margin-right:0.25rem}
 
 #output_frame
 {
-  min-width: min-content;
   width: max-content;
   margin: 0px;
-  border-right: 1px solid;
+  border: 1px solid;
   overflow: auto;
   padding: 0rem;
   resize: horizontal;
@@ -59,6 +58,19 @@ window.onbeforeunload = function()
 	req.open("GET", "/!shutdown?api_key=$api_key");
 	req.setRequestHeader("Content-Type", "application/json");
 	req.send(JSON.stringify({}));
+}
+
+function maximize_output()
+{
+	document.getElementById("source_editor").style.width = "0%";
+	document.getElementById("output_frame").style.width = "100%";
+	document.getElementById("output_frame").style.width = "max-content";
+}
+
+function maximize_editor()
+{
+	document.getElementById("source_editor").style.width = "100%";
+	document.getElementById("output_frame").style.width = "0%";
 }
 
 function source_editor_key_handler(e)
@@ -80,17 +92,13 @@ function source_editor_key_handler(e)
 	{
 		e.preventDefault();
 		document.getElementById("build_and_run").click();
-		document.getElementById("source_editor").style.display = "none";
-		document.getElementById("output_frame").style.display = "block";
-		document.getElementById("output_frame").style.width = "100%";
+		maximize_output();
+
 	}
 	else
 	if(e.key === "ArrowLeft" && e.ctrlKey)
 	{
-		document.getElementById("source_editor").style.display = "block";
-		document.getElementById("source_editor").style.width = "100%";
-		document.getElementById("source_editor").focus();
-		document.getElementById("output_frame").style.display = "none";
+		maximize_editor();
 	}
 }
 
@@ -100,18 +108,13 @@ function document_on_key_down(e)
 	{
 		e.preventDefault();
 		document.getElementById("build_and_run").click();
-		document.getElementById("source_editor").style.display = "none";
-		document.getElementById("output_frame").style.display = "block";
-		document.getElementById("output_frame").style.width = "100%";
+		maximize_output();
+
 	}
 	else
 	if(e.key === "ArrowLeft" && e.ctrlKey)
 	{
-		e.preventDefault();
-		document.getElementById("source_editor").style.display = "block";
-		document.getElementById("source_editor").style.width = "100%";
-		document.getElementById("output_frame").style.display = "none";
-		document.getElementById("source_editor").focus();
+		maximize_editor();
 	}
 }
 
