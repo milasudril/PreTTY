@@ -128,6 +128,9 @@ namespace pretty
 		std::ranges::for_each(str, [](auto item){putchar(item);});
 	}
 
+#define PRETTY_PRINT_EXPR(expr) \
+pretty::print(std::pair{pretty::code{#expr}, expr})
+
 	struct emph
 	{
 		std::string value;
@@ -226,8 +229,5 @@ namespace pretty
 		print_raw("</h4>");
 	}
 }
-
-#define PRETTY_PRINT_EXPR(expr) \
-pretty::print(std::pair{pretty::code{#expr}, expr})
 
 #endif
