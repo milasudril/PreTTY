@@ -14,6 +14,12 @@ namespace pretty
 	inline void print(char ch);
 
 	template<std::integral T>
+	void print(T val);
+
+	template<std::floating_point T>
+	void print(T val);
+
+	template<std::integral T>
 	void print(T val)
 	{
 		static constexpr auto num_chars = std::numeric_limits<T>::digits10 + 3;
@@ -46,10 +52,16 @@ namespace pretty
 	requires(is_pair<std::ranges::range_value_t<R>>)
 	void print(R&& range);
 
+	template<class ... T>
+	inline void print(std::variant<T...> const& val);
+
 	void print(char const* c_str)
 	{
 		print(std::string_view{c_str});
 	}
+
+	template<class First, class Second>
+	void print(std::pair<First, Second> const& val);
 
 	template<class ... T>
 	inline void print(std::variant<T...> const& val)
