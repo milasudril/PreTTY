@@ -9,7 +9,16 @@
 body{max-width:100%; line-height:1.5}
 *{font-family:"Andika";}
 code,pre{font-family:"Cascadia code"}
-span.number{margin-left:0.25rem; margin-right:0.25rem}
+ol.range_content > li
+{
+	display:inline list-item;
+	margin-right:1rem
+}
+ol.range_content > li::marker
+{
+	content: "[" counter(list-item) "]\00A0";
+	font-size: small
+}
 </style>
 </head>
 <body>
