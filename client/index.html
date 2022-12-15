@@ -53,27 +53,64 @@ textarea{font-family:"Cascadia code"; font-size:14px}
 <script>
 window.onbeforeunload = function()
 {
-  var req = new XMLHttpRequest();
-  req.open("GET", "/!shutdown?api_key=$api_key");
-  req.setRequestHeader("Content-Type", "application/json");
-  req.send(JSON.stringify({}));
+	var req = new XMLHttpRequest();
+	req.open("GET", "/!shutdown?api_key=$api_key");
+	req.setRequestHeader("Content-Type", "application/json");
+	req.send(JSON.stringify({}));
 }
-
 
 function source_editor_key_handler(e)
 {
-  if(e.key === "Tab" && !e.altKey && !e.ctrlKey)
-  {
-    e.preventDefault();
-    const textArea = e.currentTarget;
-    if(!e.shiftKey)
-    { textArea.setRangeText("\t", textArea.selectionStart, textArea.selectionEnd, "end"); }
-  }
+	if(e.key === "Tab" && !e.altKey && !e.ctrlKey)
+	{
+		e.preventDefault();
+		const textArea = e.currentTarget;
+		if(!e.shiftKey)
+		{ textArea.setRangeText("\t", textArea.selectionStart, textArea.selectionEnd, "end"); }
+	}
+	else
+	if(e.key === "Enter" && e.ctrlKey)
+	{
+		document.getElementById("build_and_run").click();
+	}
+	else
+	if(e.key === "ArrowRight" && e.ctrlKey)
+	{
+		e.preventDefault();
+		document.getElementById("build_and_run").click();
+		document.getElementById("source_editor").style.display = "none";
+		document.getElementById("output_frame").style.display = "block";
+		document.getElementById("output_frame").style.width = "100%";
+	}
+	else
+	if(e.key === "ArrowLeft" && e.ctrlKey)
+	{
+		document.getElementById("source_editor").style.display = "block";
+		document.getElementById("source_editor").style.width = "100%";
+		document.getElementById("source_editor").focus();
+		document.getElementById("output_frame").style.display = "none";
+	}
+}
 
-  if(e.key === "Enter" && e.ctrlKey)
-  {
-    document.getElementById("build_and_run").click();
-  }
+function document_on_key_down(e)
+{
+	if(e.key === "ArrowRight" && e.ctrlKey)
+	{
+		e.preventDefault();
+		document.getElementById("build_and_run").click();
+		document.getElementById("source_editor").style.display = "none";
+		document.getElementById("output_frame").style.display = "block";
+		document.getElementById("output_frame").style.width = "100%";
+	}
+	else
+	if(e.key === "ArrowLeft" && e.ctrlKey)
+	{
+		e.preventDefault();
+		document.getElementById("source_editor").style.display = "block";
+		document.getElementById("source_editor").style.width = "100%";
+		document.getElementById("output_frame").style.display = "none";
+		document.getElementById("source_editor").focus();
+	}
 }
 
 function set_panel_size(e)
@@ -84,17 +121,17 @@ function set_panel_size(e)
 
 </script>
 </head>
-<body onload="set_panel_size(event)">
+<body onload="set_panel_size(event)" onkeydown="document_on_key_down(event)">
 <div id="app">
-<form target="output" id="actions" method="post" enctype="multipart/form-data">
-<input type="submit" id="build_and_run" value="Build and run" formaction="/build_and_run">
-<input type="reset" id="load_example" value="Load example">
-<input type="submit" id="shutdown" value="Shutdown" formaction="/shutdown">
-<input type="hidden" name="api_key" value="$api_key">
-</form>
+	<form target="output" id="actions" method="post" enctype="multipart/form-data">
+		<input type="submit" id="build_and_run" value="Build and run" formaction="/build_and_run">
+		<input type="reset" id="load_example" value="Load example">
+		<input type="submit" id="shutdown" value="Shutdown" formaction="/shutdown">
+		<input type="hidden" name="api_key" value="$api_key">
+	</form>
 
-<div id="main">
-<textarea id="source_editor" name="source" form="actions" onkeydown="source_editor_key_handler(event)">
+	<div id="main">
+		<textarea id="source_editor" name="source" form="actions" onkeydown="source_editor_key_handler(event)">
 #include &lt;pretty/base.hpp&gt;
 #include &lt;pretty/annotations.hpp&gt;
 
@@ -162,9 +199,8 @@ int main()
 }
 </textarea>
 
-<iframe name="output" src="default.html?api_key=$api_key" id="output_frame">
-</iframe>
-</div>
+		<iframe name="output" src="default.html?api_key=$api_key" id="output_frame"></iframe>
+	</div>
 </div>
 </body>
 </html>
