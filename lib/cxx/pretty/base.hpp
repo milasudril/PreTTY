@@ -13,6 +13,8 @@ namespace pretty
 {
 	inline void print(char ch);
 
+	inline void print_raw(std::string_view str);
+
 	template<std::integral T>
 	void print(T val);
 
