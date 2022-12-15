@@ -8,6 +8,7 @@
 #include <variant>
 #include <limits>
 #include <charconv>
+#include <optional>
 
 namespace pretty
 {
@@ -20,6 +21,30 @@ namespace pretty
 
 	template<std::floating_point T>
 	void print(T val);
+
+	template<class T>
+	concept is_pair = requires(T x)
+	{
+		{x.first};
+		{x.second};
+	};
+
+	template<class First, class Second>
+	void print(std::pair<First, Second> const& val);
+
+	template<class T>
+	void print(std::optional<T> const& x);
+
+	template<class ... T>
+	inline void print(std::variant<T...> const& val);
+
+	template<std::ranges::input_range R>
+	requires(!is_pair<std::ranges::range_value_t<R>>)
+	void print(R&& range);
+
+	template<std::ranges::input_range R>
+	requires(is_pair<std::ranges::range_value_t<R>>)
+	void print(R&& range);
 
 	template<std::integral T>
 	void print(T val)
@@ -39,31 +64,12 @@ namespace pretty
 		printf("<span class=\"number\">%s</span>", std::data(buffer));
 	}
 
-	template<class T>
-	concept is_pair = requires(T x)
-	{
-		{x.first};
-		{x.second};
-	};
 
-	template<std::ranges::input_range R>
-	requires(!is_pair<std::ranges::range_value_t<R>>)
-	void print(R&& range);
-
-	template<std::ranges::input_range R>
-	requires(is_pair<std::ranges::range_value_t<R>>)
-	void print(R&& range);
-
-	template<class ... T>
-	inline void print(std::variant<T...> const& val);
 
 	void print(char const* c_str)
 	{
 		print(std::string_view{c_str});
 	}
-
-	template<class First, class Second>
-	void print(std::pair<First, Second> const& val);
 
 	template<class ... T>
 	inline void print(std::variant<T...> const& val)
@@ -126,6 +132,15 @@ namespace pretty
 	inline void print_raw(std::string_view str)
 	{
 		std::ranges::for_each(str, [](auto item){putchar(item);});
+	}
+
+	template<class T>
+	void print(std::optional<T> const& x)
+	{
+		if(x.has_value())
+		{ print(*x); }
+		else
+		{ puts("<span class=\"empty\">(no value)</span>"); }
 	}
 
 #define PRETTY_PRINT_EXPR(expr) \

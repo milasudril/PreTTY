@@ -65,12 +65,14 @@ function maximize_output()
 	document.getElementById("source_editor").style.width = "0%";
 	document.getElementById("output_frame").style.width = "100%";
 	document.getElementById("output_frame").style.width = "max-content";
+	document.getElementById("output_frame").focus();
 }
 
 function maximize_editor()
 {
 	document.getElementById("source_editor").style.width = "100%";
 	document.getElementById("output_frame").style.width = "0%";
+	document.getElementById("source_editor").focus();
 }
 
 function source_editor_key_handler(e)
@@ -199,6 +201,14 @@ int main()
 	);
 
 	print(pretty::paragraph{"The example above also shows that it is possible to use nested containers"});
+
+	print(pretty::paragraph{"An optional with no value"});
+
+	pretty::print(std::optional&lt;std::string_view&gt;{});
+
+	print(pretty::paragraph{"An optional with value"});
+
+	pretty::print(std::optional{"This optional has value"});
 
 	print(pretty::subsection{"\"Debug\" output"});
 
