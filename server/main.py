@@ -128,6 +128,9 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 				self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' %
 							self.request_version).encode('utf-8'))
 				build_and_run(parsed_data['source'][0], self.wfile)
+				return
+
+			self.wfile.write(('%s 400 Bad request %s\r\n' % (self.request_version, self.path)).encode('utf-8'))
 		except:
 			pass
 
