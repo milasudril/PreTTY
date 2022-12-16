@@ -59,7 +59,6 @@ namespace pretty
 	inline void print(std::variant<T...> const& val);
 
 	template<std::ranges::input_range R>
-	requires(!is_pair<std::ranges::range_value_t<R>>)
 	void print(R&& range);
 
 	template<std::ranges::input_range R>
@@ -126,7 +125,6 @@ namespace pretty
 	}
 
 	template<std::ranges::input_range R>
-	requires(!is_pair<std::ranges::range_value_t<R>>)
 	void print(R&& range)
 	{
 		puts("<ol start=\"0\" class=\"range_content\">");
