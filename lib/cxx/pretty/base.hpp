@@ -52,22 +52,22 @@ namespace pretty
 	void print(std::optional<T> const& x);
 
 	template<class T>
-	requires(is_tuple<T>)
+	requires(is_tuple<T> && !std::ranges::range<T>)
 	void print(T const& x);
 
 	template<class ... T>
 	inline void print(std::variant<T...> const& val);
 
 	template<std::ranges::forward_range R>
-	void print(R&& range);
+	void print(R const& range);
 
 	template<std::ranges::forward_range R>
 	requires(is_pair<std::ranges::range_value_t<R>>)
-	void print(R&& range);
+	void print(R const& range);
 
 	template<std::ranges::forward_range R>
 	requires(std::ranges::sized_range<std::ranges::range_value_t<R>>)
-	void print(R&& range);
+	void print(R const& range);
 
 
 
@@ -131,7 +131,7 @@ namespace pretty
 	}
 
 	template<std::ranges::forward_range R>
-	void print(R&& range)
+	void print(R const& range)
 	{
 		puts("<ol start=\"0\" class=\"range_content\">");
 		std::ranges::for_each(range, [](auto const& item){ print_list_item(item); });
@@ -140,7 +140,7 @@ namespace pretty
 
 	template<std::ranges::forward_range R>
 	requires(is_pair<std::ranges::range_value_t<R>>)
-	void print(R&& range)
+	void print(R const& range)
 	{
 		puts("<table>");
 		std::ranges::for_each(range, [](auto const& item){
@@ -154,7 +154,7 @@ namespace pretty
 	}
 
 	template<std::ranges::forward_range R>
-	void print_table_row(R&& range)
+	void print_table_row(R const& range)
 	{
 		puts("<tr>");
 		std::ranges::for_each(range, [](auto const& item) {
@@ -167,7 +167,7 @@ namespace pretty
 
 	template<std::ranges::forward_range R>
 	requires(std::ranges::sized_range<std::ranges::range_value_t<R>>)
-	void print(R&& range)
+	void print(R const& range)
 	{
 		auto const i = std::ranges::adjacent_find(range, [](auto const& a, auto const& b) {
 			return std::size(a) != std::size(b);
@@ -190,8 +190,6 @@ namespace pretty
 			puts("</ol>");
 		}
 	}
-
-
 
 	inline void print(char ch)
 	{
@@ -247,7 +245,7 @@ namespace pretty
 	}
 
 	template<class T>
-	requires(is_tuple<T>)
+	requires(is_tuple<T> && !std::ranges::range<T>)
 	void print(T const& x)
 	{
 		puts("<ol start=\"0\" class=\"range_content\">");
