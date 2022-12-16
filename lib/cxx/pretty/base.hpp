@@ -58,14 +58,20 @@ namespace pretty
 	template<class ... T>
 	inline void print(std::variant<T...> const& val);
 
-	template<std::ranges::input_range R>
+	template<std::ranges::forward_range R>
 	void print(R&& range);
 
-	template<std::ranges::input_range R>
+	template<std::ranges::forward_range R>
 	requires(is_pair<std::ranges::range_value_t<R>>)
 	void print(R&& range);
 
+	template<std::ranges::forward_range R>
+	requires(std::ranges::sized_range<std::ranges::range_value_t<R>>)
+	void print(R&& range);
 
+
+
+	/// implementation
 
 	template<std::integral T>
 	void print(T val)
@@ -124,7 +130,7 @@ namespace pretty
 		print_raw("</li>");
 	}
 
-	template<std::ranges::input_range R>
+	template<std::ranges::forward_range R>
 	void print(R&& range)
 	{
 		puts("<ol start=\"0\" class=\"range_content\">");
@@ -132,11 +138,11 @@ namespace pretty
 		puts("</ol>");
 	}
 
-	template<std::ranges::input_range R>
+	template<std::ranges::forward_range R>
 	requires(is_pair<std::ranges::range_value_t<R>>)
 	void print(R&& range)
 	{
-		puts("<table><tr><th>First</th><th>Second</th></tr>");
+		puts("<table>");
 		std::ranges::for_each(range, [](auto const& item){
 			puts("<tr><td>");
 			print(item.first);
@@ -146,6 +152,46 @@ namespace pretty
 		});
 		puts("</table>");
 	}
+
+	template<std::ranges::forward_range R>
+	void print_table_row(R&& range)
+	{
+		puts("<tr>");
+		std::ranges::for_each(range, [](auto const& item) {
+			puts("<td>");
+			print(item);
+			puts("</td>");
+		});
+		puts("</tr>");
+	}
+
+	template<std::ranges::forward_range R>
+	requires(std::ranges::sized_range<std::ranges::range_value_t<R>>)
+	void print(R&& range)
+	{
+		auto const i = std::ranges::adjacent_find(range, [](auto const& a, auto const& b) {
+			return std::size(a) != std::size(b);
+		});
+
+		if(i == std::end(range))
+		{
+			puts("<table>");
+			std::ranges::for_each(range, [](auto const& range){
+				print_table_row(range);
+			});
+			puts("</table>");
+		}
+		else
+		{
+			puts("<ol start=\"0\">");
+			std::ranges::for_each(range, [](auto const& range) {
+				print_list_item(range);
+			});
+			puts("</ol>");
+		}
+	}
+
+
 
 	inline void print(char ch)
 	{
