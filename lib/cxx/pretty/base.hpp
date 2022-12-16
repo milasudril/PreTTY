@@ -41,7 +41,7 @@ namespace pretty
 	template<class T>
 	concept is_tuple = !is_pair<T> && requires(T x)
 	{
-		{std::get<0>(x)};
+		{get<0>(x)};
 		{std::tuple_size<T>::value};
 	};
 
@@ -185,12 +185,29 @@ namespace pretty
 		{ puts("<span class=\"empty\">(no value)</span>"); }
 	}
 
+	namespace detail
+	{
+		template <class F, class Tuple, std::size_t... I>
+		constexpr decltype(auto) apply_impl(F&& f, Tuple&& t, std::index_sequence<I...>)
+		{
+			return std::invoke(std::forward<F>(f), get<I>(std::forward<Tuple>(t))...);
+		}
+	}
+
+	template <class F, class Tuple>
+	constexpr decltype(auto) apply_adl(F&& f, Tuple&& t)
+	{
+		return detail::apply_impl(
+			std::forward<F>(f), std::forward<Tuple>(t),
+			std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
+	}
+
 	template<class T>
 	requires(is_tuple<T>)
 	void print(T const& x)
 	{
 		puts("<ol start=\"0\" class=\"range_content\">");
-		std::apply([](auto const&... args){
+		apply_adl([](auto const&... args){
 			(print_list_item(args),...);
 		}, x);
 		puts("</ol>");
