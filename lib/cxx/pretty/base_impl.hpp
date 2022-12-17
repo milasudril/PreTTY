@@ -202,3 +202,19 @@ constexpr decltype(auto) pretty::apply_adl(F&& f, Tuple&& t)
 		std::forward<F>(f), std::forward<Tuple>(t),
 		std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
 }
+
+template<class T>
+void pretty::print_labeled_value(std::string_view label, T const& value)
+{
+	puts("<table class=\"single_row\">");
+	print_table_row(std::tuple{label, "=", value});
+	puts("</table>");
+}
+
+template<class T>
+void pretty::print_labeled_value(char const* label, T const& value)
+{
+	puts("<table class=\"single_row\">");
+	print_table_row(std::tuple{std::string_view{label}, "=", value});
+	puts("</table>");
+}

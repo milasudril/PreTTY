@@ -83,12 +83,17 @@ namespace pretty
 	requires(fwd_range_of_tuple<R> && !fwd_range_of_sized_range<R>)
 	void print(R const& range);
 
-	template <class F, class Tuple>
+	template<class F, class Tuple>
 	constexpr decltype(auto) apply_adl(F&& f, Tuple&& t);
 
+	template<class T>
+	void print_labeled_value(char const* label, T const& value);
+
+	template<class T>
+	void print_labeled_value(std::string_view label, T const& value);
 
 	#define PRETTY_PRINT_EXPR(expr) \
-	pretty::print(std::pair{pretty::code{#expr}, expr})
+	pretty::print_labeled_value(#expr, expr)
 }
 
 #define PRETTY_BASE_IS_INCLUDED
