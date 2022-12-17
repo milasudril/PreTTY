@@ -12,12 +12,20 @@ namespace pretty
 	concept tuple = requires(T x)
 	{
 		{get<0>(x)};
+
 		{std::tuple_size<T>::value};
 	};
 
 	template<class T>
 	concept fwd_range_of_sized_range = std::ranges::forward_range<T>
 		&& std::ranges::sized_range<std::ranges::range_value_t<T>>;
+
+	template<class T>
+	concept constexpr_sized_range = std::ranges::sized_range<T> &&
+		requires(T x)
+	{
+		{ std::bool_constant<(std::size(T{}), true)> {} } -> std::same_as<std::true_type>;
+	};
 
 	inline void print(char ch);
 
