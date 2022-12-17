@@ -2,6 +2,12 @@
 #error Please include base.hpp instead
 #endif
 
+#include <array>
+#include <charconv>
+#include <cstdio>
+#include <algorithm>
+#include <limits>
+
 template<std::integral T>
 void pretty::print(T val)
 {

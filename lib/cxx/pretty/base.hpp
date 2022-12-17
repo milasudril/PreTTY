@@ -1,14 +1,10 @@
 #ifndef PRETTY_BASE_HPP
 #define PRETTY_BASE_HPP
 
+#include <tuple>
 #include <string_view>
-#include <cstdio>
-#include <algorithm>
-#include <string>
-#include <variant>
-#include <limits>
-#include <charconv>
 #include <optional>
+#include <variant>
 
 namespace pretty
 {
