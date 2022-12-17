@@ -19,21 +19,53 @@ app_dir = Path(__file__).parents[1]
 def escape_html(str):
 	return html.escape(str)
 
-def fixed_width(str):
-	return '<pre>\n' + escape_html(str) + '</pre>\n'
+def write_text(str, output_stream):
+	output_stream.write(str.encode('utf-8'))
 
-def make_error_msg(signo):
-	return '<div class="app_error">%s</div>'%signal.strsignal(signo);
+def print_delimiter(output_stream):
+	write_text('<hr>', output_stream)
+
+def make_error_msg(return_code):
+	msg = ''
+	if return_code < 0:
+		msg = 'Process terminated by %s'%signal.strsignal(signo)
+	else:
+		msg = 'Process terminated with exit status %d'%return_code
+	return '<p class="error">%s</p>'%msg
+
+def pump_data_esc(src, dest, buffer_size):
+	while (buffer := src.read(buffer_size)):
+		write_text(html.escape(buffer.decode('utf-8')), dest)
+		dest.flush()
+
+def pump_data(src, dest, buffer_size):
+	while (buffer := src.read(buffer_size)):
+		dest.write(buffer)
+		dest.flush()
 
 def build_and_run(source_code, output_stream):
+	write_text('''<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="referrer" content="no-referrer">
+''', output_stream)
+
+	with open(app_dir  / 'client/output_header.html', 'rb') as f:
+		output_stream.write(f.read())
+
+	write_text('''</head>
+<body onkeydown="window.parent.document_on_key_down(event)">''', output_stream)
+	write_text('''<h1>PreTTY output</h1>''', output_stream)
+	output_stream.flush()
 	with tempfile.TemporaryDirectory() as temp_dir:
 		src_file_name = temp_dir + '/src.cpp'
 		with open(src_file_name, 'wb') as src_file:
-			src_file.write(source_code.encode('utf-8'))
+			write_text(source_code, src_file)
 
 		cxx_inc_dir = app_dir / 'lib' / 'cxx'
 		exec_name = temp_dir + '/src.out'
-		compiler_result = subprocess.run(['g++',
+		with subprocess.Popen(['g++',
 			('-I%s'%cxx_inc_dir),
 			'-std=c++20',
 			'-O3',
@@ -45,25 +77,43 @@ def build_and_run(source_code, output_stream):
 			src_file_name,
 			'-o',
 			exec_name],
-			capture_output=True)
-		application_output = 'Compilation failed'
-		compiler_output = 'Compilation succeeded'
-		error_msg = ''
-
-		if compiler_result.returncode == 0:
-			exec_result = subprocess.run([exec_name], capture_output=True)
-			application_output = exec_result.stdout.decode('utf-8')
-			if exec_result.returncode < 0:
-				error_msg = make_error_msg(-exec_result.returncode)
-		else:
-			compiler_output = fixed_width(compiler_result.stderr.decode('utf-8'))
-
-		res = template_file.string_from_template_file(app_dir / 'client/output.html',
-			{'compiler_output': compiler_output,
-			'application_output': application_output,
-			'error_msg': error_msg})
-
-		output_stream.write(res.encode('utf-8'))
+			bufsize = 0,
+			stdout = subprocess.PIPE,
+			stdin = subprocess.DEVNULL,
+			stderr = subprocess.STDOUT) as compiler:
+			write_text('''<h2>Compiler output</h2>''', output_stream)
+			output_stream.flush()
+			write_text('<pre>', output_stream)
+			pump_data_esc(compiler.stdout, output_stream, 128)
+			write_text('</pre>', output_stream)
+			output_stream.flush()
+			compiler.wait()
+			print_delimiter(output_stream)
+			output_stream.flush()
+			if compiler.returncode != 0:
+				write_text(make_error_msg(compiler.returncode), output_stream)
+			else:
+				write_text('<p>Program compiled successfully</p>', output_stream)
+		output_stream.flush()
+		print_delimiter(output_stream)
+		output_stream.flush()
+		write_text('''<h2>Application output</h2>''', output_stream)
+		output_stream.flush()
+		with subprocess.Popen([exec_name], bufsize=0,
+			stdout=subprocess.PIPE,
+			stdin=subprocess.DEVNULL,
+			stderr=subprocess.STDOUT) as application:
+			pump_data(application.stdout, output_stream, 65536)
+			application.wait()
+			print_delimiter(output_stream)
+			output_stream.flush()
+			if application.returncode != 0:
+				write_text(make_error_msg(application.returncode), output_stream)
+			else:
+				write_text('<p>Program exited normally</p>', output_stream)
+		output_stream.flush()
+	write_text('''</body>
+</html>''', output_stream)
 
 do_exit = False
 
@@ -106,33 +156,30 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 			print(exc)
 
 	def do_POST(self):
-		try:
-			ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
-			pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
-			pdict['CONTENT-LENGTH'] = int(self.headers.get('Content-length'))
-			parsed_data = cgi.parse_multipart(self.rfile, pdict)
+		ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
+		pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
+		pdict['CONTENT-LENGTH'] = int(self.headers.get('Content-length'))
+		parsed_data = cgi.parse_multipart(self.rfile, pdict)
 
-			if not 'api_key' in parsed_data:
-				self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
-				return
+		if not 'api_key' in parsed_data:
+			self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
+			return
 
-			if parsed_data['api_key'][0] != self.api_key:
-				self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
-				return
+		if parsed_data['api_key'][0] != self.api_key:
+			self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
+			return
 
-			if self.path == '/shutdown':
-				shutdown(self.port)
-				return
+		if self.path == '/shutdown':
+			shutdown(self.port)
+			return
 
-			if self.path == '/build_and_run':
-				self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' %
-							self.request_version).encode('utf-8'))
-				build_and_run(parsed_data['source'][0], self.wfile)
-				return
+		if self.path == '/build_and_run':
+			self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' %
+						self.request_version).encode('utf-8'))
+			build_and_run(parsed_data['source'][0], self.wfile)
+			return
 
-			self.wfile.write(('%s 400 Bad request %s\r\n' % (self.request_version, self.path)).encode('utf-8'))
-		except:
-			pass
+		self.wfile.write(('%s 400 Bad request %s\r\n' % (self.request_version, self.path)).encode('utf-8'))
 
 def create_socket(listen_address, handler):
 	port = 65535
