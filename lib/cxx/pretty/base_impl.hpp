@@ -175,8 +175,8 @@ void pretty::print(R const& range)
 	}
 }
 
-template<std::ranges::forward_range R>
-requires(pretty::tuple<std::ranges::range_value_t<R>> && !std::ranges::range<std::ranges::range_value_t<R>>)
+template<class R>
+requires(pretty::fwd_range_of_tuple<R> && !pretty::fwd_range_of_sized_range<R>)
 void pretty::print(R const& range)
 {
 	puts("<table>");

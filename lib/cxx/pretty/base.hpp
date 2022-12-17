@@ -21,6 +21,10 @@ namespace pretty
 		&& std::ranges::sized_range<std::ranges::range_value_t<T>>;
 
 	template<class T>
+	concept fwd_range_of_tuple = std::ranges::forward_range<T>
+		&& tuple<std::ranges::range_value_t<T>>;
+
+	template<class T>
 	concept constexpr_sized_range = std::ranges::sized_range<T> &&
 		requires(T x)
 	{
@@ -75,8 +79,8 @@ namespace pretty
 	template<fwd_range_of_sized_range R>
 	void print(R const& range);
 
-	template<std::ranges::forward_range R>
-	requires(tuple<std::ranges::range_value_t<R>> && !std::ranges::range<std::ranges::range_value_t<R>>)
+	template<class R>
+	requires(fwd_range_of_tuple<R> && !fwd_range_of_sized_range<R>)
 	void print(R const& range);
 
 	template <class F, class Tuple>
