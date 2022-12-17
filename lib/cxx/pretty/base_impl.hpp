@@ -121,8 +121,7 @@ void pretty::print_table_row(R const& range)
 	puts("</tr>");
 }
 
-template<class T>
-requires(pretty::tuple<T>)
+template<pretty::tuple T>
 void pretty::print_table_row(T const& item)
 {
 	puts("<tr>");

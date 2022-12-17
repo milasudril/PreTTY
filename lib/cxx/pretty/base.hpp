@@ -50,8 +50,7 @@ namespace pretty
 	template<std::ranges::forward_range R>
 	void print_table_row(R const& range);
 
-	template<class T>
-	requires(tuple<T>)
+	template<tuple T>
 	void print_table_row(T const& range);
 
 	template<std::ranges::forward_range R>
