@@ -103,7 +103,7 @@ def build_and_run(source_code, output_stream):
 			stdout=subprocess.PIPE,
 			stdin=subprocess.DEVNULL,
 			stderr=subprocess.STDOUT) as application:
-			pump_data(application.stdout, output_stream, 65536)
+			pump_data(application.stdout, output_stream, 128)
 			application.wait()
 			print_delimiter(output_stream)
 			output_stream.flush()
