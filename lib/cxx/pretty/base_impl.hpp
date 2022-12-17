@@ -142,11 +142,7 @@ void pretty::print(R const& range)
 template<pretty::fwd_range_of_sized_range R>
 void pretty::print(R const& range)
 {
-	auto const i = std::ranges::adjacent_find(range, [](auto const& a, auto const& b) {
-		return std::size(a) != std::size(b);
-	});
-
-	if(i == std::end(range))
+	if constexpr(fwd_range_of_constexpr_sized_range<R>)
 	{
 		puts("<table>");
 		std::ranges::for_each(range, [](auto const& range){
@@ -156,11 +152,26 @@ void pretty::print(R const& range)
 	}
 	else
 	{
-		puts("<ol start=\"0\">");
-		std::ranges::for_each(range, [](auto const& range) {
-			print_list_item(range);
+		auto const i = std::ranges::adjacent_find(range, [](auto const& a, auto const& b) {
+			return std::size(a) != std::size(b);
 		});
-		puts("</ol>");
+
+		if(i == std::end(range))
+		{
+			puts("<table>");
+			std::ranges::for_each(range, [](auto const& range){
+				print_table_row(range);
+			});
+			puts("</table>");
+		}
+		else
+		{
+			puts("<ol start=\"0\">");
+			std::ranges::for_each(range, [](auto const& range) {
+				print_list_item(range);
+			});
+			puts("</ol>");
+		}
 	}
 }
 

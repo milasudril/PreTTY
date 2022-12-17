@@ -27,6 +27,10 @@ namespace pretty
 		{ std::bool_constant<(std::size(T{}), true)> {} } -> std::same_as<std::true_type>;
 	};
 
+	template<class T>
+	concept fwd_range_of_constexpr_sized_range = std::ranges::forward_range<T>
+		&& constexpr_sized_range<std::ranges::range_value_t<T>>;
+
 	inline void print(char ch);
 
 	inline void print_raw(std::string_view str);
