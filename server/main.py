@@ -12,6 +12,7 @@ import subprocess
 import html
 import signal
 import secrets
+import os
 import template_file
 
 app_dir = Path(__file__).parents[1]
@@ -33,13 +34,13 @@ def make_error_msg(return_code):
 		msg = 'Process terminated with exit status %d'%return_code
 	return '<p class="error">%s</p>'%msg
 
-def pump_data_esc(src, dest, buffer_size):
-	while (buffer := src.read(buffer_size)):
+def pump_data_esc(src_fd, dest, buffer_size):
+	while (buffer := os.read(src_fd, buffer_size)):
 		write_text(html.escape(buffer.decode('utf-8')), dest)
 		dest.flush()
 
-def pump_data(src, dest, buffer_size):
-	while (buffer := src.read(buffer_size)):
+def pump_data(src_fd, dest, buffer_size):
+	while (buffer := os.read(src_fd, buffer_size)):
 		dest.write(buffer)
 		dest.flush()
 
@@ -84,7 +85,7 @@ def build_and_run(source_code, output_stream):
 			write_text('''<h2>Compiler output</h2>''', output_stream)
 			output_stream.flush()
 			write_text('<pre>', output_stream)
-			pump_data_esc(compiler.stdout, output_stream, 128)
+			pump_data_esc(compiler.stdout.fileno(), output_stream, 65536)
 			write_text('</pre>', output_stream)
 			output_stream.flush()
 			compiler.wait()
@@ -103,7 +104,7 @@ def build_and_run(source_code, output_stream):
 			stdout=subprocess.PIPE,
 			stdin=subprocess.DEVNULL,
 			stderr=subprocess.STDOUT) as application:
-			pump_data(application.stdout, output_stream, 128)
+			pump_data(application.stdout.fileno(), output_stream, 65536)
 			application.wait()
 			print_delimiter(output_stream)
 			output_stream.flush()
