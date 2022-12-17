@@ -85,7 +85,7 @@ void pretty::print(std::variant<T...> const& val)
 }
 
 template<class T>
-requires(pretty::is_tuple<T> && !std::ranges::range<T>)
+requires(pretty::tuple<T> && !std::ranges::range<T>)
 void pretty::print(T const& x)
 {
 	puts("<ol start=\"0\" class=\"range_content\">");
@@ -122,7 +122,7 @@ void pretty::print_table_row(R const& range)
 }
 
 template<class T>
-requires(pretty::is_tuple<T>)
+requires(pretty::tuple<T>)
 void pretty::print_table_row(T const& item)
 {
 	puts("<tr>");
@@ -167,7 +167,7 @@ void pretty::print(R const& range)
 }
 
 template<std::ranges::forward_range R>
-requires(pretty::is_tuple<std::ranges::range_value_t<R>> && !std::ranges::range<std::ranges::range_value_t<R>>)
+requires(pretty::tuple<std::ranges::range_value_t<R>> && !std::ranges::range<std::ranges::range_value_t<R>>)
 void pretty::print(R const& range)
 {
 	puts("<table>");
