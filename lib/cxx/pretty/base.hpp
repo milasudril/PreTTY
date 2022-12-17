@@ -9,18 +9,13 @@
 namespace pretty
 {
 	template<class T>
-	concept is_pair = requires(T x)
-	{
-		{x.first};
-		{x.second};
-	};
-
-	template<class T>
-	concept is_tuple = !is_pair<T> && requires(T x)
+	concept is_tuple = requires(T x)
 	{
 		{get<0>(x)};
 		{std::tuple_size<T>::value};
 	};
+
+	static_assert(is_tuple<std::pair<int, int>>);
 
 	inline void print(char ch);
 
@@ -41,9 +36,6 @@ namespace pretty
 	template<std::floating_point T>
 	void print(T val);
 
-	template<class First, class Second>
-	void print(std::pair<First, Second> const& val);
-
 	template<class T>
 	void print(std::optional<T> const& x);
 
@@ -58,15 +50,25 @@ namespace pretty
 	void print(R const& range);
 
 	template<std::ranges::forward_range R>
-	requires(is_pair<std::ranges::range_value_t<R>>)
+	requires(std::ranges::sized_range<std::ranges::range_value_t<R>>)
 	void print(R const& range);
 
 	template<std::ranges::forward_range R>
-	requires(std::ranges::sized_range<std::ranges::range_value_t<R>>)
+	requires(is_tuple<std::ranges::range_value_t<R>> && !std::ranges::range<std::ranges::range_value_t<R>>)
 	void print(R const& range);
 
 	template <class F, class Tuple>
 	constexpr decltype(auto) apply_adl(F&& f, Tuple&& t);
+
+	template<std::ranges::forward_range R>
+	void print_table_row(R const& range);
+
+	template<class T>
+	requires(is_tuple<T>)
+	void print_table_row(T const& range);
+
+	template<class T>
+	void print_table_cell(T const& val);
 
 
 	#define PRETTY_PRINT_EXPR(expr) \

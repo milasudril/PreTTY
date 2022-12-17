@@ -49,20 +49,20 @@ void pretty::print(std::variant<T...> const& val)
 	std::visit([](auto const& item){ print(item);}, val);
 }
 
-template<class First, class Second>
-void pretty::print(std::pair<First, Second> const& val)
-{
-	puts("<table class=\"pair\">");
-	puts("<tr><td>");print(val.first);puts("</td><td>");print(val.second);puts("</td></tr>");
-	puts("</table>");
-}
-
 template<class T>
 void pretty::print_list_item(T const& val)
 {
 	print_raw("<li>");
 	print(val);
 	print_raw("</li>");
+}
+
+template<class T>
+void pretty::print_table_cell(T const& val)
+{
+	print_raw("<td>");
+	print(val);
+	print_raw("</td>");
 }
 
 template<std::ranges::forward_range R>
@@ -74,22 +74,7 @@ void pretty::print(R const& range)
 }
 
 template<std::ranges::forward_range R>
-requires(pretty::is_pair<std::ranges::range_value_t<R>>)
-void pretty::print(R const& range)
-{
-	puts("<table>");
-	std::ranges::for_each(range, [](auto const& item){
-		puts("<tr><td>");
-		print(item.first);
-		puts("</td><td>");
-		print(item.second);
-		puts("</td></tr>");
-	});
-	puts("</table>");
-}
-
-template<std::ranges::forward_range R>
-void print_table_row(R const& range)
+void pretty::print_table_row(R const& range)
 {
 	puts("<tr>");
 	std::ranges::for_each(range, [](auto const& item) {
@@ -97,6 +82,17 @@ void print_table_row(R const& range)
 		print(item);
 		puts("</td>");
 	});
+	puts("</tr>");
+}
+
+template<class T>
+requires(pretty::is_tuple<T>)
+void pretty::print_table_row(T const& item)
+{
+	puts("<tr>");
+	apply_adl([](auto const&... args){
+		(print_table_cell(args),...);
+	}, item);
 	puts("</tr>");
 }
 
@@ -124,6 +120,17 @@ void pretty::print(R const& range)
 		});
 		puts("</ol>");
 	}
+}
+
+template<std::ranges::forward_range R>
+requires(pretty::is_tuple<std::ranges::range_value_t<R>> && !std::ranges::range<std::ranges::range_value_t<R>>)
+void pretty::print(R const& range)
+{
+	puts("<table>");
+	std::ranges::for_each(range, [](auto const& item){
+		print_table_row(item);
+	});
+	puts("</table>");
 }
 
 void pretty::print(char ch)
