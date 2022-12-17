@@ -116,9 +116,7 @@ void pretty::print_table_row(R const& range)
 {
 	puts("<tr>");
 	std::ranges::for_each(range, [](auto const& item) {
-		puts("<td>");
-		print(item);
-		puts("</td>");
+		print_table_cell(item);
 	});
 	puts("</tr>");
 }
