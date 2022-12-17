@@ -139,8 +139,7 @@ void pretty::print(R const& range)
 	puts("</ol>");
 }
 
-template<std::ranges::forward_range R>
-requires(std::ranges::sized_range<std::ranges::range_value_t<R>>)
+template<pretty::fwd_range_of_sized_range R>
 void pretty::print(R const& range)
 {
 	auto const i = std::ranges::adjacent_find(range, [](auto const& a, auto const& b) {
