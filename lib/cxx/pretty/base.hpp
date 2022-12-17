@@ -15,8 +15,6 @@ namespace pretty
 		{std::tuple_size<T>::value};
 	};
 
-	static_assert(tuple<std::pair<int, int>>);
-
 	inline void print(char ch);
 
 	inline void print_raw(std::string_view str);

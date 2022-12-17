@@ -63,7 +63,7 @@ void pretty::print(T val)
 template<std::floating_point T>
 void pretty::print(T val)
 {
-	static constexpr auto num_chars = std::numeric_limits<T>::digits10 + 5;
+	static constexpr auto num_chars = 32;
 	std::array<char, num_chars> buffer{};
 	std::to_chars(std::data(buffer), std::data(buffer) + std::size(buffer) - 1, val);
 	print(std::data(buffer));
