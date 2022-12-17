@@ -27,9 +27,6 @@ namespace pretty
 
 	inline void print(char const* c_str);
 
-	template<class T>
-	void print_list_item(T const& val);
-
 	template<std::integral T>
 	void print(T val);
 
@@ -39,12 +36,25 @@ namespace pretty
 	template<class T>
 	void print(std::optional<T> const& x);
 
+	template<class ... T>
+	inline void print(std::variant<T...> const& val);
+
 	template<class T>
 	requires(is_tuple<T> && !std::ranges::range<T>)
 	void print(T const& x);
 
-	template<class ... T>
-	inline void print(std::variant<T...> const& val);
+	template<class T>
+	void print_list_item(T const& val);
+
+	template<class T>
+	void print_table_cell(T const& val);
+
+	template<std::ranges::forward_range R>
+	void print_table_row(R const& range);
+
+	template<class T>
+	requires(is_tuple<T>)
+	void print_table_row(T const& range);
 
 	template<std::ranges::forward_range R>
 	void print(R const& range);
@@ -59,16 +69,6 @@ namespace pretty
 
 	template <class F, class Tuple>
 	constexpr decltype(auto) apply_adl(F&& f, Tuple&& t);
-
-	template<std::ranges::forward_range R>
-	void print_table_row(R const& range);
-
-	template<class T>
-	requires(is_tuple<T>)
-	void print_table_row(T const& range);
-
-	template<class T>
-	void print_table_cell(T const& val);
 
 
 	#define PRETTY_PRINT_EXPR(expr) \

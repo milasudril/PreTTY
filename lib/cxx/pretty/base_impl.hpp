@@ -8,6 +8,49 @@
 #include <algorithm>
 #include <limits>
 
+
+void pretty::print(char ch)
+{
+	switch(ch)
+	{
+	case '&':
+		printf("&amp;");
+		break;
+	case '<':
+		printf("&lt;");
+		break;
+	case '>':
+		printf("&gt;");
+		break;
+	case '"':
+		printf("&quot;");
+		break;
+
+	default:
+		putchar(ch);
+	}
+}
+
+void pretty::print_raw(std::string_view str)
+{
+	std::ranges::for_each(str, [](auto item){putchar(item);});
+}
+
+void pretty::print(std::string_view str)
+{
+	std::ranges::for_each(str, [](auto x) { print(x); });
+}
+
+void pretty::print(std::string const& str)
+{
+	print(std::string_view{str});
+}
+
+void pretty::print(char const* c_str)
+{
+	print(std::string_view{c_str});
+}
+
 template<std::integral T>
 void pretty::print(T val)
 {
@@ -26,27 +69,30 @@ void pretty::print(T val)
 	print(std::data(buffer));
 }
 
-void pretty::print(std::string_view str)
+template<class T>
+void pretty::print(std::optional<T> const& x)
 {
-	std::ranges::for_each(str, [](auto x) {
-		print(x);
-	});
-}
-
-void pretty::print(std::string const& str)
-{
-	print(std::string_view{str});
-}
-
-void pretty::print(char const* c_str)
-{
-	print(std::string_view{c_str});
+	if(x.has_value())
+	{ print(*x); }
+	else
+	{ puts("<span class=\"empty\">(no value)</span>"); }
 }
 
 template<class ... T>
 void pretty::print(std::variant<T...> const& val)
 {
 	std::visit([](auto const& item){ print(item);}, val);
+}
+
+template<class T>
+requires(pretty::is_tuple<T> && !std::ranges::range<T>)
+void pretty::print(T const& x)
+{
+	puts("<ol start=\"0\" class=\"range_content\">");
+	apply_adl([](auto const&... args){
+		(print_list_item(args),...);
+	}, x);
+	puts("</ol>");
 }
 
 template<class T>
@@ -63,14 +109,6 @@ void pretty::print_table_cell(T const& val)
 	print_raw("<td>");
 	print(val);
 	print_raw("</td>");
-}
-
-template<std::ranges::forward_range R>
-void pretty::print(R const& range)
-{
-	puts("<ol start=\"0\" class=\"range_content\">");
-	std::ranges::for_each(range, [](auto const& item){ print_list_item(item); });
-	puts("</ol>");
 }
 
 template<std::ranges::forward_range R>
@@ -94,6 +132,14 @@ void pretty::print_table_row(T const& item)
 		(print_table_cell(args),...);
 	}, item);
 	puts("</tr>");
+}
+
+template<std::ranges::forward_range R>
+void pretty::print(R const& range)
+{
+	puts("<ol start=\"0\" class=\"range_content\">");
+	std::ranges::for_each(range, [](auto const& item){ print_list_item(item); });
+	puts("</ol>");
 }
 
 template<std::ranges::forward_range R>
@@ -133,42 +179,6 @@ void pretty::print(R const& range)
 	puts("</table>");
 }
 
-void pretty::print(char ch)
-{
-	switch(ch)
-	{
-	case '&':
-		printf("&amp;");
-		break;
-	case '<':
-		printf("&lt;");
-		break;
-	case '>':
-		printf("&gt;");
-		break;
-	case '"':
-		printf("&quot;");
-		break;
-
-	default:
-		putchar(ch);
-	}
-}
-
-void pretty::print_raw(std::string_view str)
-{
-	std::ranges::for_each(str, [](auto item){putchar(item);});
-}
-
-template<class T>
-void pretty::print(std::optional<T> const& x)
-{
-	if(x.has_value())
-	{ print(*x); }
-	else
-	{ puts("<span class=\"empty\">(no value)</span>"); }
-}
-
 namespace pretty::detail
 {
 	template <class F, class Tuple, std::size_t... I>
@@ -184,15 +194,4 @@ constexpr decltype(auto) pretty::apply_adl(F&& f, Tuple&& t)
 	return detail::apply_impl(
 		std::forward<F>(f), std::forward<Tuple>(t),
 		std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
-}
-
-template<class T>
-requires(pretty::is_tuple<T> && !std::ranges::range<T>)
-void pretty::print(T const& x)
-{
-	puts("<ol start=\"0\" class=\"range_content\">");
-	apply_adl([](auto const&... args){
-		(print_list_item(args),...);
-	}, x);
-	puts("</ol>");
 }
