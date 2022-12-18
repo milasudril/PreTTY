@@ -136,11 +136,13 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 			path = url.path
 			params = dict(urllib.parse.parse_qsl(url.query))
 			if not 'api_key' in params:
-				self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
+				write_text('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version,
+					self.wfile)
 				return
 
 			if params['api_key'] != self.api_key:
-				self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
+				write_text('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version,
+					self.wfile)
 				return
 
 			if path == '/!shutdown':
@@ -152,10 +154,11 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 
 			src_file = app_dir / ('client' + path)
 
-			self.wfile.write(('%s 200\r\nContent-Type: %s\r\n\r\n' % (self.request_version, get_mime_from_path(src_file))).encode('utf-8'))
+			write_text('%s 200\r\nContent-Type: %s\r\n\r\n' % (self.request_version,
+				get_mime_from_path(src_file)), self.wfile)
 
-			self.wfile.write(template_file.string_from_template_file(src_file,
-				{'port':self.port, 'api_key': self.api_key}).encode('utf-8'))
+			write_text(template_file.string_from_template_file(src_file,
+				{'port':self.port, 'api_key': self.api_key}), self.wfile)
 
 		except Exception as exc:
 			print(exc)
@@ -167,11 +170,13 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 		parsed_data = cgi.parse_multipart(self.rfile, pdict)
 
 		if not 'api_key' in parsed_data:
-			self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
+			write_text('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version,
+				self.wfile)
 			return
 
 		if parsed_data['api_key'][0] != self.api_key:
-			self.wfile.write(('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version).encode('utf-8'))
+			write_text('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version,
+				self.wfile)
 			return
 
 		if self.path == '/shutdown':
@@ -179,8 +184,8 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 			return
 
 		if self.path == '/build_and_run':
-			self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' %
-						self.request_version).encode('utf-8'))
+			write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
+				self.request_version, self.wfile)
 			build_and_run(parsed_data['source'][0], self.wfile)
 			return
 
@@ -207,8 +212,8 @@ def run():
 	with tempfile.TemporaryDirectory() as temp_dir:
 		login_page = temp_dir + '/login.html'
 		with open(login_page, 'wb') as login_page_file:
-			login_page_file.write(template_file.string_from_template_file(app_dir / 'client/login.html',
-				{'port':handler.port, 'api_key': handler.api_key}).encode('utf-8'))
+			write_text(template_file.string_from_template_file(app_dir / 'client/login.html',
+				{'port':handler.port, 'api_key': handler.api_key}), login_page_file)
 
 		with server as httpd:
 			browser = subprocess.run(['xdg-open', login_page])
