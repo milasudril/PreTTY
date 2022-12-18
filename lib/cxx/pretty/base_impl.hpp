@@ -9,6 +9,45 @@
 #include <limits>
 
 
+template<class T>
+constexpr std::optional<size_t> pretty::generic_size(T const& obj)
+{
+	if constexpr(tuple<T>)
+	{
+		return std::tuple_size_v<T>;
+	}
+	else
+	if constexpr(has_size<T>)
+	{
+		return std::size(obj);
+	}
+	else
+	{
+		return std::nullopt;
+	}
+}
+
+template<size_t Index = 1, pretty::tuple T>
+constexpr bool pretty::elements_have_same_size(T const& t)
+{
+	static_assert(Index != 0);
+	if constexpr(Index != std::tuple_size_v<T>)
+	{
+		auto const size_prev = generic_size(get<Index - 1>(t));
+		auto const size_current = generic_size(get<Index>(t));
+
+		if(size_prev.has_value() && size_current.has_value())
+		{
+			return *size_prev == size_current && elements_have_same_size<Index + 1>(t);
+		}
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
 void pretty::write_as_html(char ch)
 {
 	switch(ch)
@@ -99,11 +138,25 @@ template<class T>
 requires(pretty::tuple<T> && !std::ranges::range<T>)
 void pretty::write_as_html(T const& x)
 {
-	puts("<ol start=\"0\" class=\"tuple_content\">");
-	apply_adl([](auto const&... args){
-		(print_list_item(args),...);
-	}, x);
-	puts("</ol>");
+/*
+  TODO: Need if constexpr here to determine whether or not this is possible at all
+
+	if(elements_have_same_size(x))
+	{
+		puts("<table>");
+		apply_adl([](auto const& ... args){
+			(print_table_row(args), ...);
+		}, x);
+		puts("</table>");
+	}
+	else
+	{*/
+		puts("<ol start=\"0\" class=\"tuple_content\">");
+		apply_adl([](auto const&... args){
+			(print_list_item(args),...);
+		}, x);
+		puts("</ol>");
+//	}
 }
 
 template<class T>

@@ -27,46 +27,13 @@ namespace pretty
 	};
 
 	template<class T>
-	constexpr std::optional<size_t> generic_size(T const& obj)
-	{
-		if constexpr(tuple<T>)
-		{
-			return std::tuple_size_v<T>;
-		}
-		else
-		if constexpr(has_size<T>)
-		{
-			return std::size(obj);
-		}
-		else
-		{
-			return std::nullopt;
-		}
-	}
+	constexpr std::optional<size_t> generic_size(T const& obj);
 
 	template<class F, class Tuple>
 	constexpr decltype(auto) apply_adl(F&& f, Tuple&& t);
 
 	template<size_t Index = 1, tuple T>
-	constexpr bool elements_have_same_size(T const& t)
-	{
-		static_assert(Index != 0);
-		if constexpr(Index != std::tuple_size_v<T>)
-		{
-			auto const size_prev = generic_size(get<Index - 1>(t));
-			auto const size_current = generic_size(get<Index>(t));
-
-			if(size_prev.has_value() && size_current.has_value())
-			{
-				return *size_prev == size_current && elements_have_same_size<Index + 1>(t);
-			}
-			return false;
-		}
-		else
-		{
-			return true;
-		}
-	}
+	constexpr bool elements_have_same_size(T const& t);
 
 	template<class T>
 	concept fwd_range_of_sized_range = std::ranges::forward_range<T>
