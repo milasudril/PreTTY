@@ -182,17 +182,32 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 		parsed_data = cgi.parse_multipart(self.rfile, pdict)
 
 		if not 'api_key' in parsed_data:
+			print('api check 1')
 			write_text('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version,
 				self.wfile)
 			return
 
 		if parsed_data['api_key'][0] != self.api_key:
+			print('api check 2')
 			write_text('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version,
 				self.wfile)
 			return
 
 		if self.path == '/shutdown':
 			shutdown(self.port)
+			return
+
+		if self.path == '/load':
+			print('/load')
+			write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
+				self.request_version, self.wfile)
+			build_and_run(parsed_data['source'][0], self.wfile, self.api_key)
+			return
+
+		if self.path == '/save':
+			write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
+				self.request_version, self.wfile)
+			build_and_run(parsed_data['source'][0], self.wfile, self.api_key)
 			return
 
 		if self.path == '/build_and_run':
