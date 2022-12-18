@@ -26,6 +26,21 @@ namespace pretty
 		{std::size(x)};
 	};
 
+	template<std::ranges::forward_range R>
+	void print_table_row(R const& range);
+
+	template<tuple T>
+	void print_table_row(T const& range);
+
+	template<class T>
+	concept has_table_row_formatter = requires(T x)
+	{
+		{ print_table_row(x) };
+	};
+
+	template<tuple T, size_t Index = 0>
+	constexpr bool elements_have_table_row_formatter();
+
 	template<class T>
 	constexpr std::optional<size_t> generic_size(T const& obj);
 
@@ -90,12 +105,6 @@ namespace pretty
 
 	template<class T>
 	void print_table_cell(T const& val);
-
-	template<std::ranges::forward_range R>
-	void print_table_row(R const& range);
-
-	template<tuple T>
-	void print_table_row(T const& range);
 
 	template<std::ranges::forward_range R>
 	void write_as_html(R const& range);

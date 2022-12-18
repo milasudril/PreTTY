@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <limits>
 
+#include <typeinfo>
+
 
 template<class T>
 constexpr std::optional<size_t> pretty::generic_size(T const& obj)
@@ -24,6 +26,22 @@ constexpr std::optional<size_t> pretty::generic_size(T const& obj)
 	else
 	{
 		return std::nullopt;
+	}
+}
+
+
+template<pretty::tuple T, size_t Index = 0>
+constexpr bool pretty::elements_have_table_row_formatter()
+{
+	if constexpr(Index == std::tuple_size_v<T>)
+	{
+		return true;
+	}
+	else
+	{
+		using current_element = tuple_element_t<T, Index>;
+		return has_table_row_formatter<current_element>
+			&& elements_have_table_row_formatter<T, Index + 1>();
 	}
 }
 
@@ -138,25 +156,33 @@ template<class T>
 requires(pretty::tuple<T> && !std::ranges::range<T>)
 void pretty::write_as_html(T const& x)
 {
-/*
-  TODO: Need if constexpr here to determine whether or not this is possible at all
-
-	if(elements_have_same_size(x))
+	if constexpr(elements_have_table_row_formatter<T>())
 	{
-		puts("<table>");
-		apply_adl([](auto const& ... args){
-			(print_table_row(args), ...);
-		}, x);
-		puts("</table>");
+		if(elements_have_same_size(x))
+		{
+			puts("<table>");
+			apply_adl([](auto const& ... args){
+				(print_table_row(args), ...);
+			}, x);
+			puts("</table>");
+		}
+		else
+		{
+			puts("<ol start=\"0\" class=\"tuple_content\">");
+			apply_adl([](auto const&... args){
+				(print_list_item(args),...);
+			}, x);
+			puts("</ol>");
+		}
 	}
 	else
-	{*/
+	{
 		puts("<ol start=\"0\" class=\"tuple_content\">");
 		apply_adl([](auto const&... args){
 			(print_list_item(args),...);
 		}, x);
 		puts("</ol>");
-//	}
+	}
 }
 
 template<class T>
