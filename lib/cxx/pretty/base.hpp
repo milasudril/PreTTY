@@ -38,6 +38,8 @@ namespace pretty
 
 	inline void write_as_html(char ch);
 
+	inline void write_as_html(std::byte val);
+
 	inline void write_raw(std::string_view str);
 
 	inline void write_as_html(std::string_view str);
@@ -54,6 +56,9 @@ namespace pretty
 
 	template<class T>
 	void write_as_html(std::optional<T> const& x);
+
+	template<class T>
+	void write_as_html(T const* ptr);
 
 	template<class ... T>
 	inline void write_as_html(std::variant<T...> const& val);

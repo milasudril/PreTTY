@@ -2,6 +2,11 @@
 #include <pretty/annotations.hpp>
 
 #include <ctime>
+#include <map>
+#include <cstdint>
+#include <numbers>
+
+extern char** environ;
 
 int main()
 {
@@ -22,7 +27,7 @@ int main()
 	pretty::paragraph(R"(To make it easier to follow the output, it is possible to add annotations
 		to the program output. This includes section titles and describing text. For C++, the first
 		feature is the PRETTY_PRINT_EXPR macro, which expands stringifies its argument and prints
-		the value of it. It is like assert, but with only the print-out)");
+		the value of it. It is like assert, but with only the print-out.)");
 
 	PRETTY_PRINT_EXPR(time(nullptr));
 
@@ -37,4 +42,24 @@ int main()
 		pretty::subsubsection("This is a subsubsection");
 		pretty::paragraph("Use paragraphs for descriptive text");
 	}
+
+	pretty::section("Formatting of types using known protocols");
+	pretty::paragraph(R"(The following table shows how the C++ PreTTY support library formats data types
+		that adheres to different protocols)");
+
+	pretty::print(std::tuple{
+		std::pair{"A single character", 'A'},
+		std::pair{"A single byte", std::byte{65}},
+		std::pair{"A signed 8-bit-integer", 65},
+		std::pair{"A unsigned 8-bit-integer", 156},
+		std::pair{"A signed 64-bit-integer", -6590486094},
+		std::pair{"A float", std::numbers::pi_v<float>},
+		std::pair{"A double", std::numbers::pi_v<double>},
+		std::pair{"A large value", 6.02214076e23},
+		std::pair{"A small value", 6.62607015e-34},
+		std::pair{"A string", "HTML characters are always escaped: & < > \""},
+		std::pair{"An optional with value", std::optional{123}},
+		std::pair{"An optional without value", std::optional<int>{}},
+		std::pair{"A pointer", environ}
+	});
 }

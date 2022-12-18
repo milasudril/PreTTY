@@ -31,6 +31,11 @@ void pretty::write_as_html(char ch)
 	}
 }
 
+void pretty::write_as_html(std::byte val)
+{
+	printf("<code class=\"byte\">%02x</code>", static_cast<uint8_t>(val));
+}
+
 void pretty::write_raw(std::string_view str)
 {
 	std::ranges::for_each(str, [](auto item){putchar(item);});
@@ -76,6 +81,12 @@ void pretty::write_as_html(std::optional<T> const& x)
 	{ write_as_html(*x); }
 	else
 	{ puts("<span class=\"empty\">(no value)</span>"); }
+}
+
+template<class T>
+void pretty::write_as_html(T const* ptr)
+{
+	printf("<code class=\"pointer\">%p</code>", ptr);
 }
 
 template<class ... T>
