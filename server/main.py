@@ -144,7 +144,7 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 				return
 
 			if path == '/':
-				path = '/index.html'
+				path = '/main_page.html'
 
 			src_file = app_dir / ('client' + path)
 
