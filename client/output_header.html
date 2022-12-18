@@ -1,9 +1,11 @@
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PreTTY output</title>
-<link rel="stylesheet" href="https://latex.now.sh/style.min.css">
+<link rel="stylesheet" href="document.css?api_key=$api_key">
 <script type="text/javascript">
+// Keep this script inline so we do not trigger an additional request
+
 function monitorPageLoading()
 {
-
 	console.log(document.readyState);
 	if(document.readyState === "complete")
 	{
@@ -15,18 +17,3 @@ function monitorPageLoading()
 
 const timer = setInterval(monitorPageLoading, 1000/20);
 </script>
-<style>
-body{max-width:100%; line-height:1.5}
-*{font-family:"Andika";}
-code,pre{font-family:"Cascadia code"}
-ol.range_content > li
-{
-	display:inline list-item;
-	margin-right:1rem
-}
-ol.range_content > li::marker
-{
-	content: "[" counter(list-item) "]\00A0";
-	font-size: small
-}
-</style>

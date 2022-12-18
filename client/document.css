@@ -1,0 +1,29 @@
+@import url(https://latex.now.sh/style.min.css);
+
+body{max-width: 100%; line-height: 1.5}
+*{font-family: "Andika";}
+code, pre{font-family: "Cascadia code"}
+
+.range_content > li
+{
+	display:inline list-item;
+	margin-right:1rem
+}
+
+.range_content > li::marker
+{
+	content: "[" counter(list-item) "]\00A0";
+	font-size: small
+}
+
+.tuple_content > li
+{
+	display:inline list-item;
+	margin-right:1rem
+}
+
+.tuple_content > li::marker
+{
+	content: "[" counter(list-item) "]\00A0";
+	font-size: small
+}

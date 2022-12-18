@@ -103,7 +103,7 @@ def run_executable(exec_name, log_stream):
 
 def build_and_run(source_code, output_stream):
 	write_text('''<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="referrer" content="no-referrer">
