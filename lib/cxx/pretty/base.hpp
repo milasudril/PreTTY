@@ -5,6 +5,7 @@
 #include <string_view>
 #include <optional>
 #include <variant>
+#include <mutex>
 
 namespace pretty
 {
@@ -35,31 +36,31 @@ namespace pretty
 	concept fwd_range_of_constexpr_sized_range = std::ranges::forward_range<T>
 		&& constexpr_sized_range<std::ranges::range_value_t<T>>;
 
-	inline void print(char ch);
+	inline void write_as_html(char ch);
 
 	inline void print_raw(std::string_view str);
 
-	inline void print(std::string_view str);
+	inline void write_as_html(std::string_view str);
 
-	inline void print(std::string const& str);
+	inline void write_as_html(std::string const& str);
 
-	inline void print(char const* c_str);
+	inline void write_as_html(char const* c_str);
 
 	template<std::integral T>
-	void print(T val);
+	void write_as_html(T val);
 
 	template<std::floating_point T>
-	void print(T val);
+	void write_as_html(T val);
 
 	template<class T>
-	void print(std::optional<T> const& x);
+	void write_as_html(std::optional<T> const& x);
 
 	template<class ... T>
-	inline void print(std::variant<T...> const& val);
+	inline void write_as_html(std::variant<T...> const& val);
 
 	template<class T>
 	requires(tuple<T> && !std::ranges::range<T>)
-	void print(T const& x);
+	void write_as_html(T const& x);
 
 	template<class T>
 	void print_list_item(T const& val);
@@ -74,17 +75,27 @@ namespace pretty
 	void print_table_row(T const& range);
 
 	template<std::ranges::forward_range R>
-	void print(R const& range);
+	void write_as_html(R const& range);
 
 	template<fwd_range_of_sized_range R>
-	void print(R const& range);
+	void write_as_html(R const& range);
 
 	template<class R>
 	requires(fwd_range_of_tuple<R> && !fwd_range_of_sized_range<R>)
-	void print(R const& range);
+	void write_as_html(R const& range);
 
 	template<class F, class Tuple>
 	constexpr decltype(auto) apply_adl(F&& f, Tuple&& t);
+
+	inline constinit std::mutex output_mutex;
+
+	template<class T>
+	void print(T const& val)
+	{
+		std::lock_guard g{output_mutex};
+		write_as_html(val);
+		fflush(stdout);
+	}
 
 	template<class T>
 	void print_labeled_value(char const* label, T const& value);

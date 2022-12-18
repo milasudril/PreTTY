@@ -9,7 +9,7 @@
 #include <limits>
 
 
-void pretty::print(char ch)
+void pretty::write_as_html(char ch)
 {
 	switch(ch)
 	{
@@ -36,57 +36,57 @@ void pretty::print_raw(std::string_view str)
 	std::ranges::for_each(str, [](auto item){putchar(item);});
 }
 
-void pretty::print(std::string_view str)
+void pretty::write_as_html(std::string_view str)
 {
-	std::ranges::for_each(str, [](auto x) { print(x); });
+	std::ranges::for_each(str, [](auto x) { write_as_html(x); });
 }
 
-void pretty::print(std::string const& str)
+void pretty::write_as_html(std::string const& str)
 {
-	print(std::string_view{str});
+	write_as_html(std::string_view{str});
 }
 
-void pretty::print(char const* c_str)
+void pretty::write_as_html(char const* c_str)
 {
-	print(std::string_view{c_str});
+	write_as_html(std::string_view{c_str});
 }
 
 template<std::integral T>
-void pretty::print(T val)
+void pretty::write_as_html(T val)
 {
 	static constexpr auto num_chars = std::numeric_limits<T>::digits10 + 3;
 	std::array<char, num_chars> buffer{};
 	std::to_chars(std::data(buffer), std::data(buffer) + std::size(buffer) - 1, val);
-	print(std::data(buffer));
+	write_as_html(std::data(buffer));
 }
 
 template<std::floating_point T>
-void pretty::print(T val)
+void pretty::write_as_html(T val)
 {
 	static constexpr auto num_chars = 32;
 	std::array<char, num_chars> buffer{};
 	std::to_chars(std::data(buffer), std::data(buffer) + std::size(buffer) - 1, val);
-	print(std::data(buffer));
+	write_as_html(std::data(buffer));
 }
 
 template<class T>
-void pretty::print(std::optional<T> const& x)
+void pretty::write_as_html(std::optional<T> const& x)
 {
 	if(x.has_value())
-	{ print(*x); }
+	{ write_as_html(*x); }
 	else
 	{ puts("<span class=\"empty\">(no value)</span>"); }
 }
 
 template<class ... T>
-void pretty::print(std::variant<T...> const& val)
+void pretty::write_as_html(std::variant<T...> const& val)
 {
-	std::visit([](auto const& item){ print(item);}, val);
+	std::visit([](auto const& item){ write_as_html(item);}, val);
 }
 
 template<class T>
 requires(pretty::tuple<T> && !std::ranges::range<T>)
-void pretty::print(T const& x)
+void pretty::write_as_html(T const& x)
 {
 	puts("<ol start=\"0\" class=\"range_content\">");
 	apply_adl([](auto const&... args){
@@ -99,7 +99,7 @@ template<class T>
 void pretty::print_list_item(T const& val)
 {
 	print_raw("<li>");
-	print(val);
+	write_as_html(val);
 	print_raw("</li>");
 }
 
@@ -107,7 +107,7 @@ template<class T>
 void pretty::print_table_cell(T const& val)
 {
 	print_raw("<td>");
-	print(val);
+	write_as_html(val);
 	print_raw("</td>");
 }
 
@@ -132,7 +132,7 @@ void pretty::print_table_row(T const& item)
 }
 
 template<std::ranges::forward_range R>
-void pretty::print(R const& range)
+void pretty::write_as_html(R const& range)
 {
 	puts("<ol start=\"0\" class=\"range_content\">");
 	std::ranges::for_each(range, [](auto const& item){ print_list_item(item); });
@@ -140,7 +140,7 @@ void pretty::print(R const& range)
 }
 
 template<pretty::fwd_range_of_sized_range R>
-void pretty::print(R const& range)
+void pretty::write_as_html(R const& range)
 {
 	if constexpr(fwd_range_of_constexpr_sized_range<R>)
 	{
@@ -177,7 +177,7 @@ void pretty::print(R const& range)
 
 template<class R>
 requires(pretty::fwd_range_of_tuple<R> && !pretty::fwd_range_of_sized_range<R>)
-void pretty::print(R const& range)
+void pretty::write_as_html(R const& range)
 {
 	puts("<table>");
 	std::ranges::for_each(range, [](auto const& item){
@@ -206,15 +206,15 @@ constexpr decltype(auto) pretty::apply_adl(F&& f, Tuple&& t)
 template<class T>
 void pretty::print_labeled_value(std::string_view label, T const& value)
 {
+	std::lock_guard g{output_mutex};
 	puts("<table class=\"single_row\">");
 	print_table_row(std::tuple{label, "=", value});
 	puts("</table>");
+	fflush(stdout);
 }
 
 template<class T>
 void pretty::print_labeled_value(char const* label, T const& value)
 {
-	puts("<table class=\"single_row\">");
-	print_table_row(std::tuple{std::string_view{label}, "=", value});
-	puts("</table>");
+	print_labeled_value(std::string_view{label}, value);
 }
