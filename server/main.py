@@ -150,8 +150,6 @@ def save(filename, source_code, output_stream, api_key):
 			write_text(source_code, f)
 		status = 'File saved'
 
-		write_text('<p>File saved</p>', output_stream)
-
 	except Exception as exc:
 		status = exc
 
