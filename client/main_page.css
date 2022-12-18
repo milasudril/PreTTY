@@ -4,8 +4,10 @@
 
 html{height: 100%; margin:0; padding: 0}
 body{height: 100%; margin:0; padding: 0}
-input, select, label{margin-top:0.5rem; margin-bottom:0.5rem; margin-right:0.25rem}
-textarea{font-family: "Cascadia code"; font-size: 14px}
+textarea{font-family: "Cascadia code"; font-size: 14px; border-radius: 0.25rem}
+iframe{border-radius: 0.25rem}
+label{margin-right:0.25rem; margin-left:0.5rem}
+input{margin-right:0.25rem; border-radius: 0.25rem}
 
 #app
 {
@@ -18,16 +20,23 @@ textarea{font-family: "Cascadia code"; font-size: 14px}
 #actions
 {
 	width:100%;
-	padding: 0.0rem;
-	padding-left:0.5rem;
+	padding:0.5rem;
+	padding-left:0.0rem;
 	background-color:aliceblue;
 	display: flex;
-	justify-content:
-	space-between;
-	padding-right: 0.25rem
 }
 
-#main {display: flex; height: 100%;}
+#filename
+{
+	flex-grow: 1;
+}
+
+#main
+{
+	display: flex;
+	height: 100%;
+	padding-bottom: 0.5rem
+}
 
 #source_editor
 {
@@ -36,10 +45,11 @@ textarea{font-family: "Cascadia code"; font-size: 14px}
 	overflow: auto;
 	padding: 0.5rem;
 	margin: 0px;
-	flex: 0 1 auto;
-	resize: horizontal;
 	white-space: pre;
 	tab-size: 4;
+	margin-right:0.25rem;
+	margin-left:0.5rem;
+	resize: horizontal;
 }
 
 #output_frame
@@ -50,5 +60,7 @@ textarea{font-family: "Cascadia code"; font-size: 14px}
 	overflow: auto;
 	padding: 0rem;
 	resize: horizontal;
-	flex: 1 0 auto;
+	flex-grow: 1;
+	margin-left:0.25rem;
+	margin-right:0.5rem;
 }
