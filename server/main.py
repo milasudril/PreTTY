@@ -144,6 +144,22 @@ def load(filename, old_source, output_stream, api_key):
 
 	write_text(str, output_stream)
 
+def save(filename, source_code, output_stream, api_key):
+	try:
+		with open(filename, 'wb') as f:
+			write_text(source_code, f)
+		status = 'File saved'
+
+		write_text('<p>File saved</p>', output_stream)
+
+	except Exception as exc:
+		status = exc
+
+	status_page = template_file.string_from_template_file(app_dir / 'client' / 'status.html',
+		{'api_key': api_key, 'server_status': status})
+
+	write_text(status_page, output_stream)
+
 do_exit = False
 
 def shutdown(port):
@@ -182,7 +198,7 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 				get_mime_from_path(src_file)), self.wfile)
 
 			write_text(template_file.string_from_template_file(src_file,
-				{'port':self.port, 'api_key': self.api_key, 'current_file': '', 'current_source': ''}), self.wfile)
+				{'port':self.port, 'api_key': self.api_key, 'current_file': '', 'current_source': '', 'server_status': 'Ready'}), self.wfile)
 
 		except Exception as exc:
 			print(exc)
@@ -219,6 +235,7 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 			if self.path == '/save':
 				write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
 					self.request_version, self.wfile)
+				save(parsed_data['filename'][0], parsed_data['source'][0], self.wfile, self.api_key)
 				return
 
 			if self.path == '/build_and_run':
