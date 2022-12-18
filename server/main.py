@@ -132,6 +132,18 @@ def build_and_run(source_code, output_stream, api_key):
 	write_text('''</body>
 </html>''', output_stream)
 
+def load(filename, old_source, output_stream, api_key):
+	try:
+		with open(filename, 'rb') as f:
+			file_content = f.read().decode('utf-8')
+	except:
+		file_content = old_source
+
+	str = template_file.string_from_template_file(app_dir / 'client' / 'main_page.html',
+		{'api_key': api_key, 'current_file': filename, 'current_source': file_content})
+
+	write_text(str, output_stream)
+
 do_exit = False
 
 def shutdown(port):
@@ -170,53 +182,55 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 				get_mime_from_path(src_file)), self.wfile)
 
 			write_text(template_file.string_from_template_file(src_file,
-				{'port':self.port, 'api_key': self.api_key}), self.wfile)
+				{'port':self.port, 'api_key': self.api_key, 'current_file': '', 'current_source': ''}), self.wfile)
 
 		except Exception as exc:
 			print(exc)
 
 	def do_POST(self):
-		ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
-		pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
-		pdict['CONTENT-LENGTH'] = int(self.headers.get('Content-length'))
-		parsed_data = cgi.parse_multipart(self.rfile, pdict)
+		try:
+			ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
+			pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
+			pdict['CONTENT-LENGTH'] = int(self.headers.get('Content-length'))
+			parsed_data = cgi.parse_multipart(self.rfile, pdict)
 
-		if not 'api_key' in parsed_data:
-			print('api check 1')
-			write_text('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version,
-				self.wfile)
-			return
+			if not 'api_key' in parsed_data:
+				print('api check 1')
+				write_text('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version,
+					self.wfile)
+				return
 
-		if parsed_data['api_key'][0] != self.api_key:
-			print('api check 2')
-			write_text('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version,
-				self.wfile)
-			return
+			if parsed_data['api_key'][0] != self.api_key:
+				print('api check 2')
+				write_text('%s 403 Forbidden\r\nInvalid api key\r\n' % self.request_version,
+					self.wfile)
+				return
 
-		if self.path == '/shutdown':
-			shutdown(self.port)
-			return
+			if self.path == '/shutdown':
+				shutdown(self.port)
+				return
 
-		if self.path == '/load':
-			print('/load')
-			write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
-				self.request_version, self.wfile)
-			build_and_run(parsed_data['source'][0], self.wfile, self.api_key)
-			return
+			if self.path == '/load':
+				write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
+					self.request_version, self.wfile)
+				load(parsed_data['filename'][0], parsed_data['source'][0], self.wfile, self.api_key)
+				return
 
-		if self.path == '/save':
-			write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
-				self.request_version, self.wfile)
-			build_and_run(parsed_data['source'][0], self.wfile, self.api_key)
-			return
+			if self.path == '/save':
+				write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
+					self.request_version, self.wfile)
+				return
 
-		if self.path == '/build_and_run':
-			write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
-				self.request_version, self.wfile)
-			build_and_run(parsed_data['source'][0], self.wfile, self.api_key)
-			return
+			if self.path == '/build_and_run':
+				write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
+					self.request_version, self.wfile)
+				build_and_run(parsed_data['source'][0], self.wfile, self.api_key)
+				return
 
-		self.wfile.write(('%s 400 Bad request %s\r\n' % (self.request_version, self.path)).encode('utf-8'))
+			self.wfile.write(('%s 400 Bad request %s\r\n' % (self.request_version, self.path)).encode('utf-8'))
+
+		except Exception as exc:
+			print(exc)
 
 def create_socket(listen_address, handler):
 	port = 65535
