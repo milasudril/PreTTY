@@ -30,7 +30,7 @@ def print_delimiter(output_stream):
 def make_error_msg(return_code):
 	msg = ''
 	if return_code < 0:
-		msg = 'Process terminated by %s'%signal.strsignal(signo)
+		msg = 'Process terminated by %s'%signal.strsignal(-return_code)
 	else:
 		msg = 'Process terminated with exit status %d'%return_code
 	return '<p class="error">%s</p>'%msg
@@ -48,6 +48,59 @@ def pump_data(src_fd, dest, buffer_size):
 def get_mime_from_path(src):
 	return mimetypes.guess_type(src)[0]
 
+def compile_single_src_cxx_file(src_file, exec_name, log_stream):
+	cxx_inc_dir = app_dir / 'lib' / 'cxx'
+	with subprocess.Popen(['g++',
+		('-I%s'%cxx_inc_dir),
+		'-std=c++20',
+		'-O3',
+		'-ffast-math',
+		'-Wall',
+		'-Wextra',
+		'-Wconversion',
+		'-Werror',
+		src_file,
+		'-o',
+		exec_name],
+		bufsize = 0,
+		stdout = subprocess.PIPE,
+		stdin = subprocess.DEVNULL,
+		stderr = subprocess.STDOUT) as compiler:
+		write_text('''<h2>Compiler output</h2>''', log_stream)
+		log_stream.flush()
+		write_text('<pre>', log_stream)
+		pump_data_esc(compiler.stdout.fileno(), log_stream, 65536)
+		write_text('</pre>', log_stream)
+		log_stream.flush()
+		compiler.wait()
+		print_delimiter(log_stream)
+		log_stream.flush()
+		if compiler.returncode != 0:
+			write_text(make_error_msg(compiler.returncode), log_stream)
+			return False
+		else:
+			write_text('<p>Program compiled successfully</p>', log_stream)
+			return True
+
+def run_executable(exec_name, log_stream):
+	with subprocess.Popen([exec_name], bufsize=0,
+		stdout=subprocess.PIPE,
+		stdin=subprocess.DEVNULL,
+		stderr=subprocess.STDOUT) as application:
+		write_text('''<h2>Application output</h2>\n''', log_stream)
+		log_stream.flush()
+		pump_data(application.stdout.fileno(), log_stream, 65536)
+		application.wait()
+		print_delimiter(log_stream)
+		log_stream.flush()
+		if application.returncode != 0:
+			write_text(make_error_msg(application.returncode), log_stream)
+			return False
+		else:
+			write_text('<p>Program exited normally</p>\n', log_stream)
+			return True
+
+
 def build_and_run(source_code, output_stream):
 	write_text('''<!DOCTYPE html>
 <html>
@@ -60,63 +113,22 @@ def build_and_run(source_code, output_stream):
 		output_stream.write(f.read())
 
 	write_text('''</head>
-<body onkeydown="window.parent.document_on_key_down(event)">''', output_stream)
-	write_text('''<h1>PreTTY output</h1>''', output_stream)
+<body onkeydown="window.parent.document_on_key_down(event)">\n''', output_stream)
+	write_text('''<h1>PreTTY output</h1>\n''', output_stream)
 	output_stream.flush()
 	with tempfile.TemporaryDirectory() as temp_dir:
 		src_file_name = temp_dir + '/src.cpp'
 		with open(src_file_name, 'wb') as src_file:
 			write_text(source_code, src_file)
 
-		cxx_inc_dir = app_dir / 'lib' / 'cxx'
 		exec_name = temp_dir + '/src.out'
-		with subprocess.Popen(['g++',
-			('-I%s'%cxx_inc_dir),
-			'-std=c++20',
-			'-O3',
-			'-ffast-math',
-			'-Wall',
-			'-Wextra',
-			'-Wconversion',
-			'-Werror',
-			src_file_name,
-			'-o',
-			exec_name],
-			bufsize = 0,
-			stdout = subprocess.PIPE,
-			stdin = subprocess.DEVNULL,
-			stderr = subprocess.STDOUT) as compiler:
-			write_text('''<h2>Compiler output</h2>''', output_stream)
+		if compile_single_src_cxx_file(src_file_name, exec_name, output_stream):
 			output_stream.flush()
-			write_text('<pre>', output_stream)
-			pump_data_esc(compiler.stdout.fileno(), output_stream, 65536)
-			write_text('</pre>', output_stream)
-			output_stream.flush()
-			compiler.wait()
 			print_delimiter(output_stream)
 			output_stream.flush()
-			if compiler.returncode != 0:
-				write_text(make_error_msg(compiler.returncode), output_stream)
-			else:
-				write_text('<p>Program compiled successfully</p>', output_stream)
-		output_stream.flush()
-		print_delimiter(output_stream)
-		output_stream.flush()
-		write_text('''<h2>Application output</h2>''', output_stream)
-		output_stream.flush()
-		with subprocess.Popen([exec_name], bufsize=0,
-			stdout=subprocess.PIPE,
-			stdin=subprocess.DEVNULL,
-			stderr=subprocess.STDOUT) as application:
-			pump_data(application.stdout.fileno(), output_stream, 65536)
-			application.wait()
-			print_delimiter(output_stream)
+			run_executable(exec_name, output_stream)
 			output_stream.flush()
-			if application.returncode != 0:
-				write_text(make_error_msg(application.returncode), output_stream)
-			else:
-				write_text('<p>Program exited normally</p>', output_stream)
-		output_stream.flush()
+
 	write_text('''</body>
 </html>''', output_stream)
 
