@@ -3,7 +3,7 @@
 *{box-sizing:border-box}
 
 html{height: 100%; margin:0; padding: 0}
-body{height: 100%; margin:0; padding: 0}
+body{height: 100%; margin:0; padding: 0; background-color:aliceblue;}
 textarea{font-family: "Cascadia code"; font-size: 14px; border-radius: 0.25rem}
 iframe{border-radius: 0.25rem}
 label{margin-right:0.25rem; margin-left:0.5rem}
@@ -13,8 +13,8 @@ input{margin-right:0.25rem; border-radius: 0.25rem}
 {
 	width: 100%;
 	height: 100%;
-	display: grid;
-	grid-template-rows: max-content 1fr;
+	display: flex;
+	flex-direction: column
 }
 
 #actions
@@ -22,7 +22,6 @@ input{margin-right:0.25rem; border-radius: 0.25rem}
 	width:100%;
 	padding:0.5rem;
 	padding-left:0.0rem;
-	background-color:aliceblue;
 	display: flex;
 }
 
@@ -34,8 +33,8 @@ input{margin-right:0.25rem; border-radius: 0.25rem}
 #main
 {
 	display: flex;
-	height: 100%;
-	padding-bottom: 0.5rem
+	padding-bottom: 0.5rem;
+	flex-grow: 1
 }
 
 #source_editor
@@ -63,4 +62,10 @@ input{margin-right:0.25rem; border-radius: 0.25rem}
 	flex-grow: 1;
 	margin-left:0.25rem;
 	margin-right:0.5rem;
+}
+
+#status_frame
+{
+	height: 2rem;
+	border: 0px;
 }
