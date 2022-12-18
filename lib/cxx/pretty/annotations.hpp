@@ -5,108 +5,61 @@
 
 namespace pretty
 {
-	struct emph
+	template<class Content>
+	inline void paragraph(Content const& content)
 	{
-		std::string value;
-	};
-
-	inline void print(emph const& em)
-	{
-		print_raw("<em>");
-		print(em.value);
-		print_raw("</em>");
+		atomic_write([](Content const& content){
+			write_raw("<p>");
+			write_as_html(content);
+			write_raw("</p>");
+		}, content);
 	}
 
-	struct link
+	template<class Caption>
+	inline void section(Caption const& caption)
 	{
-		std::string href;
-		std::string caption;
-	};
-
-	inline void print(link const& a)
-	{
-		print_raw("<a target=\"blank\" href=\"");
-		print(a.href);
-		print_raw("\">");
-		print(a.caption);
-		print_raw("</a>");
+		atomic_write([](Caption const& caption){
+			write_raw("<h3>");
+			write_as_html(caption);
+			write_raw("</h3>");
+		}, caption);
 	}
 
-	struct code
+	template<class Caption>
+	inline void subsection(Caption const& caption)
 	{
-		std::string value;
-	};
-
-	inline void print(code const& em)
-	{
-		print_raw("<code>");
-		print(em.value);
-		print_raw("</code>");
+		atomic_write([](Caption const& caption){
+			write_raw("<h4>");
+			write_as_html(caption);
+			write_raw("</h4>");
+		}, caption);
 	}
 
-	struct samp
+	template<class Caption>
+	inline void subsubsection(Caption const& caption)
 	{
-		std::string value;
-	};
-
-	inline void print(samp const& em)
-	{
-		print_raw("<samp>");
-		print(em.value);
-		print_raw("</samp>");
-	};
-
-	using inline_element = std::variant<std::string_view, emph, link, code, samp>;
-
-	struct paragraph:private std::vector<inline_element>
-	{
-		using std::vector<inline_element>::vector;
-
-		auto const& get() const
-		{ return static_cast<std::vector<inline_element> const&>(*this); }
-	};
-
-	inline void print(paragraph const& obj)
-	{
-		print_raw("<p>");
-		std::ranges::for_each(obj.get(), [](auto const& item) {
-			print(item);
-		});
-		print_raw("</p>");
+		atomic_write([](Caption const& caption){
+			write_raw("<h5>");
+			write_as_html(caption);
+			write_raw("</h5>");
+		}, caption);
 	}
 
-	struct section:private std::vector<inline_element>
-	{
-		using std::vector<inline_element>::vector;
 
-		auto const& get() const
-		{ return static_cast<std::vector<inline_element> const&>(*this); }
+	struct box
+	{
+		[[nodiscard]] box()
+		{
+			write_raw("<div class=\"box\">");
+		}
+
+		~box()
+		{
+			write_raw("</div>");
+			fflush(stdout);
+		}
+
+		std::shared_lock<std::shared_mutex> lock{output_mutex};
 	};
-
-	inline void print(section const& obj)
-	{
-		print_raw("<h3>");
-		std::ranges::for_each(obj.get(), [](auto const& item) {
-			print(item);
-		});
-		print_raw("</h3>");
-	}
-
-	struct subsection:private std::vector<inline_element>
-	{
-		using std::vector<inline_element>::vector;
-
-		auto const& get() const
-		{ return static_cast<std::vector<inline_element> const&>(*this); }
-	};
-
-	inline void print(subsection const& obj)
-	{
-		print_raw("<h4>");
-		std::ranges::for_each(obj.get(), [](auto const& item) {
-			print(item);
-		});
-		print_raw("</h4>");
-	}
 }
 #endif

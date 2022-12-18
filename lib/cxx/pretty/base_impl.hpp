@@ -31,7 +31,7 @@ void pretty::write_as_html(char ch)
 	}
 }
 
-void pretty::print_raw(std::string_view str)
+void pretty::write_raw(std::string_view str)
 {
 	std::ranges::for_each(str, [](auto item){putchar(item);});
 }
@@ -88,7 +88,7 @@ template<class T>
 requires(pretty::tuple<T> && !std::ranges::range<T>)
 void pretty::write_as_html(T const& x)
 {
-	puts("<ol start=\"0\" class=\"range_content\">");
+	puts("<ol start=\"0\" class=\"tuple_content\">");
 	apply_adl([](auto const&... args){
 		(print_list_item(args),...);
 	}, x);
@@ -98,17 +98,17 @@ void pretty::write_as_html(T const& x)
 template<class T>
 void pretty::print_list_item(T const& val)
 {
-	print_raw("<li>");
+	write_raw("<li>");
 	write_as_html(val);
-	print_raw("</li>");
+	write_raw("</li>");
 }
 
 template<class T>
 void pretty::print_table_cell(T const& val)
 {
-	print_raw("<td>");
+	write_raw("<td>");
 	write_as_html(val);
-	print_raw("</td>");
+	write_raw("</td>");
 }
 
 template<std::ranges::forward_range R>
@@ -203,14 +203,30 @@ constexpr decltype(auto) pretty::apply_adl(F&& f, Tuple&& t)
 		std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
 }
 
+template<class Function, class ... Args>
+void pretty::atomic_write(Function&& func, Args&& ... args)
+{
+	std::shared_lock g{output_mutex};
+	func(std::forward<Args>(args)...);
+	fflush(stdout);
+}
+
+template<class T>
+void pretty::print(T const& val)
+{
+	atomic_write([](auto const& val){
+		write_as_html(val);
+	}, val);
+}
+
 template<class T>
 void pretty::print_labeled_value(std::string_view label, T const& value)
 {
-	std::lock_guard g{output_mutex};
-	puts("<table class=\"single_row\">");
-	print_table_row(std::tuple{label, "=", value});
-	puts("</table>");
-	fflush(stdout);
+	atomic_write([](std::string_view label, auto const& value) {
+		puts("<table class=\"single_row\">");
+		print_table_row(std::tuple{label, "=", value});
+		puts("</table>");
+	}, label, value);
 }
 
 template<class T>

@@ -4,6 +4,14 @@ body{max-width: 100%; line-height: 1.5}
 *{font-family: "Andika";}
 code, pre{font-family: "Cascadia code"}
 
+.box
+{
+	border:1px solid;
+	padding: 0.5rem;
+	margin:1rem;
+	border-radius: 0.5rem
+}
+
 .range_content > li
 {
 	display:inline list-item;

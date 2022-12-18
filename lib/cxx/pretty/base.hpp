@@ -5,7 +5,7 @@
 #include <string_view>
 #include <optional>
 #include <variant>
-#include <mutex>
+#include <shared_mutex>
 
 namespace pretty
 {
@@ -38,7 +38,7 @@ namespace pretty
 
 	inline void write_as_html(char ch);
 
-	inline void print_raw(std::string_view str);
+	inline void write_raw(std::string_view str);
 
 	inline void write_as_html(std::string_view str);
 
@@ -87,15 +87,13 @@ namespace pretty
 	template<class F, class Tuple>
 	constexpr decltype(auto) apply_adl(F&& f, Tuple&& t);
 
-	inline constinit std::mutex output_mutex;
+	inline constinit std::shared_mutex output_mutex;
+
+	template<class Function, class ... Args>
+	void atomic_write(Function&& func);
 
 	template<class T>
-	void print(T const& val)
-	{
-		std::lock_guard g{output_mutex};
-		write_as_html(val);
-		fflush(stdout);
-	}
+	void print(T const& val);
 
 	template<class T>
 	void print_labeled_value(char const* label, T const& value);
