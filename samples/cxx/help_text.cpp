@@ -50,9 +50,9 @@ int main()
 	pretty::print(std::tuple{
 		std::pair{"A single character", 'A'},
 		std::pair{"A single byte", std::byte{65}},
-		std::pair{"A signed 8-bit-integer", 65},
-		std::pair{"A unsigned 8-bit-integer", 156},
-		std::pair{"A signed 64-bit-integer", -6590486094},
+		std::pair{"A signed 8-bit-integer", static_cast<int8_t>(65)},
+		std::pair{"A unsigned 8-bit-integer", static_cast<uint8_t>(156)},
+		std::pair{"A signed 64-bit-integer", static_cast<int64_t>(-6590486094)},
 		std::pair{"A float", std::numbers::pi_v<float>},
 		std::pair{"A double", std::numbers::pi_v<double>},
 		std::pair{"A large value", 6.02214076e23},
