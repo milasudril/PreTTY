@@ -14,6 +14,7 @@ import signal
 import secrets
 import os
 import template_file
+import mimetypes
 
 app_dir = Path(__file__).parents[1]
 
@@ -43,6 +44,9 @@ def pump_data(src_fd, dest, buffer_size):
 	while (buffer := os.read(src_fd, buffer_size)):
 		dest.write(buffer)
 		dest.flush()
+
+def get_mime_from_path(src):
+	return mimetypes.guess_type(src)[0]
 
 def build_and_run(source_code, output_stream):
 	write_text('''<!DOCTYPE html>
@@ -148,7 +152,7 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 
 			src_file = app_dir / ('client' + path)
 
-			self.wfile.write(('%s 200\r\nContent-Type: text/html\r\n\r\n' % self.request_version).encode('utf-8'))
+			self.wfile.write(('%s 200\r\nContent-Type: %s\r\n\r\n' % (self.request_version, get_mime_from_path(src_file))).encode('utf-8'))
 
 			self.wfile.write(template_file.string_from_template_file(src_file,
 				{'port':self.port, 'api_key': self.api_key}).encode('utf-8'))
