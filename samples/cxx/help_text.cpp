@@ -2,9 +2,10 @@
 #include <pretty/annotations.hpp>
 
 #include <ctime>
-#include <map>
 #include <cstdint>
 #include <numbers>
+#include <vector>
+#include <map>
 
 extern char** environ;
 
@@ -45,7 +46,10 @@ int main()
 
 	pretty::section("Formatting of types using known protocols");
 	pretty::paragraph(R"(The following table shows how the C++ PreTTY support library formats data types
-		that adheres to different protocols)");
+		that adheres to different protocols. Compound data structures are printed recursively. If all
+		elements in the container have a size and the size over all elements is the same, a table is
+		preferred on that level. Otherwise, an ordered list is used as fallback. Single items are printed
+		as is.)");
 
 	pretty::print(std::tuple{
 		std::pair{"A single character", 'A'},
@@ -60,6 +64,21 @@ int main()
 		std::pair{"A string", "HTML characters are always escaped: & < > \""},
 		std::pair{"An optional with value", std::optional{123}},
 		std::pair{"An optional without value", std::optional<int>{}},
-		std::pair{"A pointer", environ}
+		std::pair{"A pointer", environ},
+		std::pair{"An std::vector of ints", std::vector{1, 2, 3, 4}},
+		std::pair{"An std::vector of std:tuple<int, int, int>",
+			std::vector{
+				std::tuple{1, 2, 3},
+				std::tuple{4, 5, 6},
+				std::tuple{7, 8, 9}
+			}
+		},
+		std::pair{"An std::map of std::string to std::array<int, 3>",
+			std::map<std::string, std::array<int, 3>>{
+				{"Foo", std::array<int, 3>{34, 5, 7}},
+				{"Bar", std::array<int, 3>{34, 5, 8}},
+				{"Kaka", std::array<int, 3>{34, 5, 9}}
+			}
+		}
 	});
 }
