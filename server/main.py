@@ -101,7 +101,7 @@ def run_executable(exec_name, log_stream):
 			return True
 
 
-def build_and_run(source_code, output_stream):
+def build_and_run(source_code, output_stream, api_key):
 	write_text('''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -109,8 +109,8 @@ def build_and_run(source_code, output_stream):
 <meta name="referrer" content="no-referrer">
 ''', output_stream)
 
-	with open(app_dir  / 'client/output_header.html', 'rb') as f:
-		output_stream.write(f.read())
+	write_text(template_file.string_from_template_file(app_dir / 'client/output_header.html',
+		{'api_key': api_key}), output_stream)
 
 	write_text('''</head>
 <body onkeydown="window.parent.document_on_key_down(event)">\n''', output_stream)
@@ -198,7 +198,7 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 		if self.path == '/build_and_run':
 			write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
 				self.request_version, self.wfile)
-			build_and_run(parsed_data['source'][0], self.wfile)
+			build_and_run(parsed_data['source'][0], self.wfile, self.api_key)
 			return
 
 		self.wfile.write(('%s 400 Bad request %s\r\n' % (self.request_version, self.path)).encode('utf-8'))
