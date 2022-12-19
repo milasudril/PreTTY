@@ -5,7 +5,7 @@
 #include <string_view>
 #include <optional>
 #include <variant>
-#include <shared_mutex>
+#include <mutex>
 
 namespace pretty
 {
@@ -116,7 +116,7 @@ namespace pretty
 	requires(fwd_range_of_tuple<R> && !fwd_range_of_sized_range<R>)
 	void write_as_html(R const& range);
 
-	inline constinit std::shared_mutex output_mutex;
+	inline constinit std::recursive_mutex output_mutex;
 
 	template<class Function, class ... Args>
 	void atomic_write(Function&& func);

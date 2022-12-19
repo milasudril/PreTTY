@@ -296,7 +296,7 @@ constexpr decltype(auto) pretty::apply_adl(F&& f, Tuple&& t)
 template<class Function, class ... Args>
 void pretty::atomic_write(Function&& func, Args&& ... args)
 {
-	std::shared_lock g{output_mutex};
+	std::lock_guard g{output_mutex};
 	func(std::forward<Args>(args)...);
 	fflush(stdout);
 }

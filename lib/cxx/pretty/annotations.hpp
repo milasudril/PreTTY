@@ -59,7 +59,7 @@ namespace pretty
 			fflush(stdout);
 		}
 
-		std::shared_lock<std::shared_mutex> lock{output_mutex};
+		std::lock_guard<std::recursive_mutex> lock{output_mutex};
 	};
 }
 #endif
