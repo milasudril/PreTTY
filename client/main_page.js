@@ -46,6 +46,7 @@ function source_editor_key_handler(e)
 	else
 	if(e.key === "ArrowLeft" && e.ctrlKey)
 	{
+		e.preventDefault();
 		maximize_editor();
 	}
 }
@@ -62,7 +63,20 @@ function document_on_key_down(e)
 	else
 	if(e.key === "ArrowLeft" && e.ctrlKey)
 	{
+		e.preventDefault();
 		maximize_editor();
+	}
+	else
+	if(e.key === "1" && e.ctrlKey)
+	{
+		e.preventDefault();
+		document.getElementById("load").click();
+	}
+	else
+	if(e.key === "2" && e.ctrlKey)
+	{
+		e.preventDefault();
+		document.getElementById("save").click();
 	}
 }
 
