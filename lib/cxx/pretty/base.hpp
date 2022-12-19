@@ -6,6 +6,8 @@
 #include <optional>
 #include <variant>
 #include <mutex>
+#include <charconv>
+#include <array>
 
 namespace pretty
 {
@@ -80,6 +82,24 @@ namespace pretty
 	inline void write_as_html(std::string const& str);
 
 	inline void write_as_html(char const* c_str);
+
+	template<std::integral T>
+	constexpr auto to_char_buffer(T val)
+	{
+		constexpr auto num_chars = std::numeric_limits<T>::digits10 + 3;
+		std::array<char, num_chars> buffer{};
+		std::to_chars(std::data(buffer), std::data(buffer) + std::size(buffer) - 1, val);
+		return buffer;
+	}
+
+	template<std::floating_point T>
+	constexpr auto to_char_buffer(T val)
+	{
+		constexpr auto num_chars = 32;
+		std::array<char, num_chars> buffer{};
+		std::to_chars(std::data(buffer), std::data(buffer) + std::size(buffer) - 1, val);
+		return buffer;
+	}
 
 	template<std::integral T>
 	void write_as_html(T val);

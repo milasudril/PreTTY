@@ -2,8 +2,6 @@
 #error Please include base.hpp instead
 #endif
 
-#include <array>
-#include <charconv>
 #include <cstdio>
 #include <algorithm>
 #include <limits>
@@ -71,16 +69,16 @@ void pretty::write_as_html(char ch)
 	switch(ch)
 	{
 	case '&':
-		printf("&amp;");
+		printf("&");
 		break;
 	case '<':
-		printf("&lt;");
+		printf("<");
 		break;
 	case '>':
-		printf("&gt;");
+		printf(">");
 		break;
 	case '"':
-		printf("&quot;");
+		printf("&quote;");
 		break;
 
 	default:
@@ -116,19 +114,13 @@ void pretty::write_as_html(char const* c_str)
 template<std::integral T>
 void pretty::write_as_html(T val)
 {
-	static constexpr auto num_chars = std::numeric_limits<T>::digits10 + 3;
-	std::array<char, num_chars> buffer{};
-	std::to_chars(std::data(buffer), std::data(buffer) + std::size(buffer) - 1, val);
-	write_as_html(std::data(buffer));
+	write_as_html(std::data(to_char_buffer(val)));
 }
 
 template<std::floating_point T>
 void pretty::write_as_html(T val)
 {
-	static constexpr auto num_chars = 32;
-	std::array<char, num_chars> buffer{};
-	std::to_chars(std::data(buffer), std::data(buffer) + std::size(buffer) - 1, val);
-	write_as_html(std::data(buffer));
+	write_as_html(std::data(to_char_buffer(val)));
 }
 
 template<class T>
