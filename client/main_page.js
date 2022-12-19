@@ -49,6 +49,11 @@ function source_editor_key_handler(e)
 		e.preventDefault();
 		maximize_editor();
 	}
+	else
+	if(e.key === "Escape")
+	{
+		document.getElementById("filename").focus()
+	}
 }
 
 function document_on_key_down(e)
