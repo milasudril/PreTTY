@@ -14,15 +14,19 @@ namespace pretty
 	};
 
 	struct plot_line_style
-	{};
+	{
+		float line_width = 1.0f;
+	};
 
 	template<class T>
 	concept arithmetic = std::is_arithmetic_v<T>;
 
-	template<class X, class Y>
-	requires(std::is_arithmetic_v<X> && std::is_arithmetic_v<Y>)
-	struct plot_params
+	template<arithmetic X, arithmetic Y>
+	struct plot_params_2d
 	{
+		using x_type = X;
+		using y_type = Y;
+
 		std::optional<plot_axis_range<X>> x_range;
 		std::optional<plot_axis_range<Y>> y_range;
 		plot_line_style line_style;
@@ -41,12 +45,27 @@ namespace pretty
 		{get<1>(x)} -> arithmetic;
 	};
 
-
 	template<class T>
 	concept plot_data_2d = std::ranges::input_range<T> && plot_point_2d<std::ranges::range_value_t<T>>;
 
+	template<plot_data_2d T>
+	struct make_plot_params_2d
+	{
+	private:
+		using plot_point_type = std::ranges::range_value_t<T>;
+		using x_type = std::decay_t<decltype(get<0>(std::declval<plot_point_type>()))>;
+		using y_type = std::decay_t<decltype(get<1>(std::declval<plot_point_type>()))>;
+
+	public:
+		using type = plot_params_2d<x_type, y_type>;
+	};
+
+	template<plot_data_2d T>
+	using plot_params_2d_t = make_plot_params_2d<T>::type;
+
 	template<plot_data_2d PlotData>
-	void plot(PlotData const& plot_data)
+	void plot(PlotData const& plot_data,
+		plot_params_2d_t<PlotData> const& = plot_params_2d_t<PlotData>{})
 	{
 		atomic_write([](auto const& range){
 			puts("<div style=\"width:80%; aspect-ratio:16/10; border:1px solid; margin-left:auto; margin-right:auto\">");
