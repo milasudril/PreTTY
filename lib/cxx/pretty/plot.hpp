@@ -16,6 +16,9 @@ namespace pretty
 	struct plot_line_style
 	{};
 
+	template<class T>
+	concept arithmetic = std::is_arithmetic_v<T>;
+
 	template<class X, class Y>
 	requires(std::is_arithmetic_v<X> && std::is_arithmetic_v<Y>)
 	struct plot_params
@@ -31,8 +34,19 @@ namespace pretty
 		std::optional<plot_line_style> x_tick_lines;
 	};
 
-	template<fwd_range_of_tuple R>
-	void plot(R const& range)
+	template<class T>
+	concept plot_point_2d = tuple<T> && requires(T x)
+	{
+		{get<0>(x)} -> arithmetic;
+		{get<1>(x)} -> arithmetic;
+	};
+
+
+	template<class T>
+	concept plot_data_2d = std::ranges::input_range<T> && plot_point_2d<std::ranges::range_value_t<T>>;
+
+	template<plot_data_2d PlotData>
+	void plot(PlotData const& plot_data)
 	{
 		atomic_write([](auto const& range){
 			puts("<div style=\"width:80%; aspect-ratio:16/10; border:1px solid; margin-left:auto; margin-right:auto\">");
@@ -49,7 +63,7 @@ namespace pretty
 			puts("\" fill=\"none\"/>");
 			puts("</svg>");
 			puts("</div>");
-		}, range);
+		}, plot_data);
 	}
 }
 
