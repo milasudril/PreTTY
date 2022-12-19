@@ -5,6 +5,32 @@
 
 namespace pretty
 {
+	template<class X>
+	requires(std::is_arithmetic_v<X>)
+	struct plot_axis_range
+	{
+		X min;
+		X max;
+	};
+
+	struct plot_line_style
+	{};
+
+	template<class X, class Y>
+	requires(std::is_arithmetic_v<X> && std::is_arithmetic_v<Y>)
+	struct plot_params
+	{
+		std::optional<plot_axis_range<X>> x_range;
+		std::optional<plot_axis_range<Y>> y_range;
+		plot_line_style line_style;
+		uint32_t x_tick_base = 10;
+		uint32_t y_tick_base = 10;
+		std::optional<plot_line_style> x_axis;
+		std::optional<plot_line_style> y_tick_lins;
+		std::optional<plot_line_style> y_axis;
+		std::optional<plot_line_style> x_tick_lines;
+	};
+
 	template<fwd_range_of_tuple R>
 	void plot(R const& range)
 	{
