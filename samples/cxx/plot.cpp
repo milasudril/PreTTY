@@ -15,5 +15,5 @@ int main()
 		vals[k] = my_point{} + 1.0f*my_vector{cs.cos, cs.sin, 0.0f};
 	}
 
-	pretty::plot_as_svg(vals);
+	pretty::plot(vals);
 }

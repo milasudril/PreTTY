@@ -6,7 +6,7 @@
 namespace pretty
 {
 	template<fwd_range_of_tuple R>
-	void plot_as_svg(R const& range)
+	void plot(R const& range)
 	{
 		atomic_write([](auto const& range){
 			puts("<div style=\"width:80%; aspect-ratio:16/10; border:1px solid; margin-left:auto; margin-right:auto\">");
