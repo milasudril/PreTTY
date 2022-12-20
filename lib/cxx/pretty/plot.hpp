@@ -88,11 +88,11 @@ namespace pretty
 		auto const y_range = plot_params.y_range.value_or(compute_range<1>(plot_data));
 
 		atomic_write([](auto const& range, auto x_range, auto y_range){
-			auto const factor = 1024.0f;
+			auto const factor = 1.0f;
 			auto const width = x_range.max - x_range.min;
 			auto const height = y_range.max - y_range.min;
 
-			puts("<div style=\"width:80%; max-height:30vh; aspect-ratio:16/10; border:1px solid; margin-left:auto; margin-right:auto\">");
+			puts("<div style=\"max-width:80%; max-height:30vh; aspect-ratio:16/10; border:1px solid; margin-left:auto; margin-right:auto\">");
 			write_raw("<svg viewbox=\"");
 			write_raw(std::data(to_char_buffer(factor*x_range.min)));
 			putchar(' ');
@@ -102,7 +102,7 @@ namespace pretty
 			putchar(' ');
 			write_raw(std::data(to_char_buffer(factor*height)));
 			write_raw("\" width=\"100%\" height=\"100%\">");
-			puts("<polyline stroke-width=\"4\" stroke=\"blue\" points=\"");
+			puts("<polyline stroke-width=\"0.0625\" stroke=\"blue\" points=\"");
 			std::ranges::for_each(range, [factor, height](auto const& item) {
 				auto const x = factor*get<0>(item);
 				auto const y = factor*get<1>(item);
