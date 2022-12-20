@@ -92,7 +92,7 @@ namespace pretty
 			auto const width = x_range.max - x_range.min;
 			auto const height = y_range.max - y_range.min;
 
-			puts("<div style=\"max-width:80%; max-height:30vh; aspect-ratio:16/10; border:1px solid; margin-left:auto; margin-right:auto\">");
+			puts("<figure style=\"max-width:80%; max-height:30vh; aspect-ratio:16/10; border:1px solid; margin-left:auto; margin-right:auto\">");
 			write_raw("<svg viewbox=\"");
 			write_raw(std::data(to_char_buffer(factor*x_range.min)));
 			putchar(' ');
@@ -102,10 +102,20 @@ namespace pretty
 			putchar(' ');
 			write_raw(std::data(to_char_buffer(factor*height)));
 			write_raw("\" width=\"100%\" height=\"100%\">");
-			puts("<polyline stroke-width=\"0.0625\" stroke=\"blue\" points=\"");
-			std::ranges::for_each(range, [factor, height](auto const& item) {
+			write_raw("<rect fill=\"none\" stroke-width=\"0.004\" stroke=\"red\" x=\"");
+			write_raw(std::data(to_char_buffer(factor*x_range.min)));
+			write_raw("\" y=\"");
+			write_raw(std::data(to_char_buffer(factor*y_range.min)));
+			write_raw("\" width=\"");
+			write_raw(std::data(to_char_buffer(factor*width)));
+			write_raw("\" height=\"");
+			write_raw(std::data(to_char_buffer(factor*height)));
+			write_raw("\"/>");
+
+			puts("<polyline stroke-width=\"0.003\" stroke=\"blue\" points=\"");
+			std::ranges::for_each(range, [factor, y_range](auto const& item) {
 				auto const x = factor*get<0>(item);
-				auto const y = factor*get<1>(item);
+				auto const y = factor*(y_range.max + y_range.min - get<1>(item));
 				write_raw(std::data(to_char_buffer(x)));
 				putchar(',');
 				write_raw(std::data(to_char_buffer(y)));
@@ -113,7 +123,7 @@ namespace pretty
 			});
 			puts("\" fill=\"none\"/>");
 			puts("</svg>");
-			puts("</div>");
+			puts("</figure>");
 		}, plot_data, x_range, y_range);
 	}
 }
