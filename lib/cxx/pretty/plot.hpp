@@ -37,10 +37,12 @@ namespace pretty
 		std::optional<plot_axis_range<X>> x_range;
 		std::optional<plot_axis_range<Y>> y_range;
 		plot_line_style line_style;
+	//	callable get_x_tick_pitch;
+	//	callable get_y_tick_pitch;
 		uint32_t x_tick_base = 10;
 		uint32_t y_tick_base = 10;
 		std::optional<plot_line_style> x_axis;
-		std::optional<plot_line_style> y_tick_lins;
+		std::optional<plot_line_style> y_tick_lines;
 		std::optional<plot_line_style> y_axis;
 		std::optional<plot_line_style> x_tick_lines;
 	};
@@ -92,7 +94,7 @@ namespace pretty
 			auto const width = x_range.max - x_range.min;
 			auto const height = y_range.max - y_range.min;
 
-			puts("<figure style=\"max-width:80%; max-height:30vh; aspect-ratio:16/10; border:1px solid; margin-left:auto; margin-right:auto\">");
+			puts("<figure style=\"max-width:62%; max-height:38vh; aspect-ratio:16/10; border:1px solid; margin-left:auto; margin-right:auto\">");
 			write_raw("<svg viewbox=\"");
 			write_raw(std::data(to_char_buffer(factor*x_range.min)));
 			putchar(' ');
