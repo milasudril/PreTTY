@@ -139,7 +139,7 @@ namespace pretty
 	inline constinit std::recursive_mutex output_mutex;
 
 	template<class Function, class ... Args>
-	void atomic_write(Function&& func);
+	void atomic_write(Function&& func, Args&&... args);
 
 	template<class T>
 	void print(T const& val);
