@@ -2,20 +2,28 @@
 #define PRETTY_PLOT_HPP
 
 #include "./base.hpp"
+#include <cmath>
 
 namespace pretty
 {
-	template<class X>
-	requires(std::is_arithmetic_v<X>)
+	template<class T>
+	concept arithmetic = std::is_arithmetic_v<T>;
+
+	template<arithmetic X>
 	struct plot_axis_range
 	{
 		X min;
 		X max;
 	};
-
-	template<class T>
-	concept arithmetic = std::is_arithmetic_v<T>;
-
+	
+	template<arithmetic X>
+	auto compute_tick_pitch(plot_axis_range<X> const& range, unsigned int tick_base)
+	{
+		auto const length = static_cast<double>(range.max - range.min);
+		auto const logl = std::round(std::log(length)/std::log(static_cast<double>(tick_base)));
+		return std::pow(tick_base, logl - 1.0);
+	}
+	
 	template<arithmetic X, arithmetic Y>
 	struct plot_params_2d
 	{
@@ -24,8 +32,8 @@ namespace pretty
 
 		std::optional<plot_axis_range<X>> x_range;
 		std::optional<plot_axis_range<Y>> y_range;
-		uint32_t x_tick_base = 10;
-		uint32_t y_tick_base = 10;
+		unsigned int x_tick_base = 10;
+		unsigned int y_tick_base = 10;
 	};
 
 	template<class T>
@@ -110,18 +118,7 @@ namespace pretty
 			putchar(' ');
 			write_raw(std::data(m_h_chars));
 			write_raw("\" width=\"100%\" height=\"100%\">");
-			
-			// TODO: Should be possible to hide this
-			write_raw("<rect class=\"axis_box\" fill=\"none\" stroke-width=\"1\" stroke=\"red\" x=\"");
-			write_raw(std::data(m_x_min_chars));
-			write_raw("\" y=\"");
-			write_raw(std::data(m_y_min_chars));
-			write_raw("\" width=\"");
-			write_raw(std::data(m_w_chars));
-			write_raw("\" height=\"");
-			write_raw(std::data(m_h_chars));
-			write_raw("\"/>");
-			
+
 			puts("<polyline class=\"curve_00\" stroke-width=\"1\" stroke=\"blue\" points=\"");
 			std::ranges::for_each(m_plot_data.get(),
 				[scale = m_scale, y_range = m_y_range](auto const& item) {
@@ -133,6 +130,18 @@ namespace pretty
 				putchar(' ');
 			});
 			puts("\" fill=\"none\"/>");
+
+			// TODO: Should be possible to hide this
+			write_raw("<rect class=\"axis_box\" fill=\"none\" stroke-width=\"1\" stroke=\"red\" x=\"");
+			write_raw(std::data(m_x_min_chars));
+			write_raw("\" y=\"");
+			write_raw(std::data(m_y_min_chars));
+			write_raw("\" width=\"");
+			write_raw(std::data(m_w_chars));
+			write_raw("\" height=\"");
+			write_raw(std::data(m_h_chars));
+			write_raw("\"/>");
+
 			puts("</svg>");
 			
 			puts("</figure>"); 
@@ -140,13 +149,20 @@ namespace pretty
 		
 	private:
 		std::reference_wrapper<PlotData const> m_plot_data;
-		plot_axis_range<typename plot_2d_coord_types<PlotData>::x_type> m_x_range;
-		plot_axis_range<typename plot_2d_coord_types<PlotData>::y_type> m_y_range;
+		
+		using x_type = typename plot_2d_coord_types<PlotData>::x_type;
+		using y_type = typename plot_2d_coord_types<PlotData>::y_type;
+		
+		plot_axis_range<x_type> m_x_range;
+		plot_axis_range<y_type> m_y_range;
 		double m_scale;
 		double m_w;
 		double m_h;
 		plot_axis_range<double> m_sx_range;
 		plot_axis_range<double> m_sy_range;
+		
+		x_type m_x_tick_pitch;
+		y_type m_y_tick_pitch;
 		
 		std::array<char, 32> m_w_chars;
 		std::array<char, 32> m_h_chars;
