@@ -112,7 +112,7 @@ namespace pretty
 			write_raw("\" width=\"100%\" height=\"100%\">");
 			
 			// TODO: Should be possible to hide this
-			write_raw("<rect fill=\"none\" stroke-width=\"1\" stroke=\"red\" x=\"");
+			write_raw("<rect class=\"axis_box\" fill=\"none\" stroke-width=\"1\" stroke=\"red\" x=\"");
 			write_raw(std::data(m_x_min_chars));
 			write_raw("\" y=\"");
 			write_raw(std::data(m_y_min_chars));
@@ -122,7 +122,7 @@ namespace pretty
 			write_raw(std::data(m_h_chars));
 			write_raw("\"/>");
 			
-			puts("<polyline stroke-width=\"1\" stroke=\"blue\" points=\"");
+			puts("<polyline class=\"curve_00\" stroke-width=\"1\" stroke=\"blue\" points=\"");
 			std::ranges::for_each(m_plot_data.get(),
 				[scale = m_scale, y_range = m_y_range](auto const& item) {
 				auto const x = scale*get<0>(item);
