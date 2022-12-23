@@ -11,14 +11,14 @@ int main()
 	constexpr auto N = 24;
 	pretty::paragraph("PreTTY can be used to produce simple function graphs, like in the figure below:");
 
-	std::array<my_point, 2*N + 1> vals{};
-	for(int32_t k = -24; k != 2*N + 1 -24; ++k)
+	std::array<my_point, 4*N + 1> vals{};
+	for(int32_t k = -48; k != 4*N + 1 - 48; ++k)
 	{
-		auto const theta = geosimd::rotation_angle{geosimd::turns{static_cast<double>(k)/(4.0*N)}};
+		auto const theta = geosimd::rotation_angle{geosimd::turns{static_cast<double>(k)/(1.0*N)}};
 		auto cs = cossin(theta);
-		vals[k+24] = my_point{0.0f, 0.0f, 0.0f} + my_vector{static_cast<float>(k)/N, cs.cos, 0.0f};
+		vals[k + 48] = my_point{0.0f, 0.0f, 0.0f} + my_vector{static_cast<float>(k)/N, cs.sin, 0.0f};
 	}
 
-	pretty::figure fig{"cos(2πx) on the interval [-1, 1]"};
+	pretty::figure fig{"sin(2πx) on the interval [-2, 2]"};
 	pretty::plot(vals);
 }
