@@ -151,7 +151,7 @@ namespace pretty
 				write_raw(std::data(to_char_buffer(y)));
 				putchar(' ');
 			});
-			puts("/>");
+			puts("\"/>");
 
 			// Draw x grid
 			in_steps(m_x_range, m_x_tick_pitch,
@@ -205,7 +205,7 @@ namespace pretty
 			// Draw y labels
 			in_steps(m_y_range, m_y_tick_pitch,
 				[scale = m_scale,
-					x_min_chars = std::data(m_x_min_chars),
+					x_loc_chars = to_char_buffer(m_sx_range.min - 2),
 					y_min_chars = std::data(m_y_min_chars),
 					y_max_chars = std::data(m_y_max_chars),
 					y_range=m_y_range]
@@ -213,7 +213,7 @@ namespace pretty
 				write_raw("<text class=\"x_labels\" style=\"font-size:");
 				write_raw(std::data(to_char_buffer(text_height)));
 				write_raw("px\" text-anchor=\"end\" dominant-baseline=\"middle\" x=\"");
-				write_raw(x_min_chars);
+				write_raw(std::data(x_loc_chars));
 				write_raw("\" y=\"");
 				auto const ybuff = to_char_buffer(scale*(y_range.max + y_range.min - y));
 				write_raw(std::data(ybuff));
@@ -221,7 +221,7 @@ namespace pretty
 				write_raw(std::data(to_char_buffer(static_cast<float>(y))));
 				puts("</text>");
 			});
-/*
+
 			write_raw("<rect class=\"axis_box\" fill=\"none\" stroke-width=\"1\" stroke=\"red\" x=\"");
 			write_raw(std::data(m_x_min_chars));
 			write_raw("\" y=\"");
@@ -230,11 +230,8 @@ namespace pretty
 			write_raw(std::data(m_w_chars));
 			write_raw("\" height=\"");
 			write_raw(std::data(m_h_chars));
-			puts("\"/>");
-*/
-			
-			puts("</svg>");
-			
+			puts("\"/>");			
+			puts("</svg>");			
 			puts("</figure>"); 
 		}
 		
