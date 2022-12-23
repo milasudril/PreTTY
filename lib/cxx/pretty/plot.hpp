@@ -217,7 +217,7 @@ namespace pretty
 				puts("</text>");
 			});
 
-			write_raw("<rect class=\"axis_box\" fill=\"none\" stroke-width=\"1\" stroke=\"red\" x=\"");
+			write_raw("<rect class=\"axis_box\" fill=\"none\" stroke-width=\"1\" x=\"");
 			write_raw(std::data(m_x_min_chars));
 			write_raw("\" y=\"");
 			write_raw(std::data(m_y_min_chars));

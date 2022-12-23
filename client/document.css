@@ -25,62 +25,31 @@ h1
 	text-align: center
 }
 
-h2 {
-  font-size: 1.7rem;
-  line-height: 2rem;
-  margin-top: 3rem;
-}
+h2 {font-size: 1.7rem; line-height: 2rem; margin-top: 3rem;}
 
-h3 {
-  font-size: 1.4rem;
-  margin-top: 2.5rem;
-}
+h3 {font-size: 1.4rem;  margin-top: 2.5rem;}
 
-h4 {
-  font-size: 1.2rem;
-  margin-top: 2rem;
-}
+h4 {font-size: 1.2rem; margin-top: 2rem;}
 
-h5 {
-  font-size: 1rem;
-  margin-top: 1.8rem;
-}
+h5 {font-size: 1rem; margin-top: 1.8rem;}
 
-h6 {
+h6
+{
   font-size: 1rem;
   font-style: italic;
   font-weight: normal;
   margin-top: 2.5rem;
 }
 
-h3,
-h4,
-h5,
-h6 {
-  line-height: 1.625rem;
-}
+h3, h4, h5, h6 { line-height: 1.625rem; }
 
-h1 + h2 {
-  margin-top: 1.625rem;
-}
+h1 + h2 { margin-top: 1.625rem; }
 
-h2 + h3,
-h3 + h4,
-h4 + h5 {
-  margin-top: 0.8rem;
-}
+h2 + h3, h3 + h4, h4 + h5 { margin-top: 0.8rem; }
 
-h5 + h6 {
-  margin-top: -0.8rem;
-}
+h5 + h6 { margin-top: -0.8rem; }
 
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin-bottom: 0.8rem;
-}
+h2, h3, h4, h5, h6 { margin-bottom: 0.8rem;}
 
 a{color:Indigo}
 a::hover{text-decoration:underline}
@@ -125,4 +94,20 @@ figure
 	aspect-ratio:16/10;
 	margin-left:auto;
 	margin-right:auto
+}
+
+polyline.curve_00
+{
+	stroke: Indigo;
+}
+
+polyline.x_grid, polyline.y_grid
+{
+	stroke: black;
+	stroke-opacity: 0.25
+}
+
+rect.axis_box
+{
+	stroke: black;
 }
