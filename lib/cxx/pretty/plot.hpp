@@ -130,15 +130,15 @@ namespace pretty
 			// TODO: "Figure" wrapper should be treated similarly to the "Box" wrapper
 			puts("<figure style=\"max-width:62%; max-height:38vh; aspect-ratio:16/10; border:1px solid; margin-left:auto; margin-right:auto\">");
 			
-			write_raw("<svg viewbox=\"");
-			write_raw(std::data(m_x_min_chars));
-			putchar(' ');
-			write_raw(std::data(m_y_min_chars));
-			putchar(' ');
-			write_raw(std::data(m_w_chars));
-			putchar(' ');
 			constexpr auto text_height = 16;
-			write_raw(std::data(to_char_buffer(m_h + text_height)));
+			write_raw("<svg viewbox=\"");
+			write_raw(std::data(to_char_buffer(m_sx_range.min - 4*text_height)));
+			putchar(' ');
+			write_raw(std::data(to_char_buffer(m_sy_range.min - text_height)));
+			putchar(' ');
+			write_raw(std::data(to_char_buffer(m_w + 8*text_height)));
+			putchar(' ');
+			write_raw(std::data(to_char_buffer(m_h + 2*text_height)));
 			write_raw("\" width=\"100%\" height=\"100%\">");
 
 			puts("<polyline class=\"curve_00\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
@@ -170,7 +170,7 @@ namespace pretty
 			});
 		
 			// Draw y grid
-			in_steps(m_x_range, m_x_tick_pitch,
+			in_steps(m_y_range, m_y_tick_pitch,
 				[scale = m_scale,
 					x_min_chars = std::data(m_x_min_chars),
 					x_max_chars = std::data(m_x_max_chars),
@@ -188,6 +188,7 @@ namespace pretty
 				puts("\"/>");
 			});
 
+			// Draw x labels
 			in_steps(m_x_range, m_x_tick_pitch,
 				[scale = m_scale, y_max_chars = std::data(m_y_max_chars)](auto, double x) {
 				write_raw("<text class=\"x_labels\" style=\"font-size:");
@@ -198,6 +199,26 @@ namespace pretty
 				write_raw(y_max_chars);
 				write_raw("\">");
 				write_raw(std::data(to_char_buffer(static_cast<float>(x))));
+				puts("</text>");
+			});
+
+			// Draw y labels
+			in_steps(m_y_range, m_y_tick_pitch,
+				[scale = m_scale,
+					x_min_chars = std::data(m_x_min_chars),
+					y_min_chars = std::data(m_y_min_chars),
+					y_max_chars = std::data(m_y_max_chars),
+					y_range=m_y_range]
+				(auto, double y) {
+				write_raw("<text class=\"x_labels\" style=\"font-size:");
+				write_raw(std::data(to_char_buffer(text_height)));
+				write_raw("px\" text-anchor=\"end\" dominant-baseline=\"middle\" x=\"");
+				write_raw(x_min_chars);
+				write_raw("\" y=\"");
+				auto const ybuff = to_char_buffer(scale*(y_range.max + y_range.min - y));
+				write_raw(std::data(ybuff));
+				write_raw("\">");
+				write_raw(std::data(to_char_buffer(static_cast<float>(y))));
 				puts("</text>");
 			});
 /*
