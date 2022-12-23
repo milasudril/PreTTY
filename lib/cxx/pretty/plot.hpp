@@ -133,8 +133,8 @@ namespace pretty
 			putchar(' ');
 			write_raw(std::data(to_char_buffer(m_w + 8*text_height)));
 			putchar(' ');
-			write_raw(std::data(to_char_buffer(m_h + 2*text_height)));
-			write_raw("\" width=\"100%\" height=\"100%\">");
+			write_raw(std::data(to_char_buffer(m_h + 2.5*text_height)));
+			write_raw("\">");
 
 			puts("<polyline class=\"curve_00\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
 			std::ranges::for_each(m_plot_data.get(),
