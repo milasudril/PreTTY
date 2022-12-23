@@ -154,39 +154,40 @@ namespace pretty
 			puts("/>");
 
 			// Draw x grid
-			for(auto x = std::ceil(m_x_range.min/m_x_tick_pitch)*m_x_tick_pitch;
-				x <= m_x_range.max;
-				x += m_x_tick_pitch)
-			{
+			in_steps(m_x_range, m_x_tick_pitch,
+				[scale = m_scale, y_min_chars = std::data(m_y_min_chars), y_max_chars = std::data(m_y_max_chars)]
+				(auto, double x) {
 				puts("<polyline class=\"x_grid\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
-				auto const xbuff = to_char_buffer(m_scale*x);
+				auto const xbuff = to_char_buffer(scale*x);
 				write_raw(std::data(xbuff));
 				putchar(',');
-				write_raw(std::data(m_y_min_chars));
+				write_raw(y_min_chars);
 				putchar(' ');
 				write_raw(std::data(xbuff));
 				putchar(',');
-				write_raw(std::data(m_y_max_chars));
+				write_raw(y_max_chars);
 				puts("\"/>");
-			}
+			});
 		
 			// Draw y grid
-			for(auto y = std::ceil(m_y_range.min/m_y_tick_pitch)*m_y_tick_pitch;
-				y <= m_y_range.max;
-				y += m_y_tick_pitch)
-			{
+			in_steps(m_x_range, m_x_tick_pitch,
+				[scale = m_scale,
+					x_min_chars = std::data(m_x_min_chars),
+					x_max_chars = std::data(m_x_max_chars),
+					y_range=m_y_range]
+				(auto, double y) {
 				write_raw("<polyline class=\"y_grid\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
-				auto const ybuff = to_char_buffer(m_scale*(m_y_range.max + m_y_range.min - y));
-				write_raw(std::data(m_x_min_chars));
+				auto const ybuff = to_char_buffer(scale*(y_range.max + y_range.min - y));
+				write_raw(x_min_chars);
 				putchar(',');
 				write_raw(std::data(ybuff));
 				putchar(' ');
-				write_raw(std::data(m_x_max_chars));
+				write_raw(x_max_chars);
 				putchar(',');
 				write_raw(std::data(ybuff));
 				puts("\"/>");
-			}
-			
+			});
+
 			in_steps(m_x_range, m_x_tick_pitch,
 				[scale = m_scale, y_max_chars = std::data(m_y_max_chars)](auto, double x) {
 				write_raw("<text class=\"x_labels\" style=\"font-size:");
@@ -199,19 +200,6 @@ namespace pretty
 				write_raw(std::data(to_char_buffer(static_cast<float>(x))));
 				puts("</text>");
 			});
-			
-			// Draw x label
-			auto const x0 = std::ceil(m_x_range.min/m_x_tick_pitch)*m_x_tick_pitch;
-			auto const dx = m_x_tick_pitch;
-			size_t k = 0;
-			while(true)
-			{
-				auto const x = x0 + static_cast<double>(k)*dx;
-				if(x > m_x_range.max)
-				{ break; }
-
-				++k;
-			}
 /*
 			write_raw("<rect class=\"axis_box\" fill=\"none\" stroke-width=\"1\" stroke=\"red\" x=\"");
 			write_raw(std::data(m_x_min_chars));
