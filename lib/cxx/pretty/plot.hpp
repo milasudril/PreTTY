@@ -75,6 +75,22 @@ namespace pretty
 		return plot_axis_range{get<Element>(*minmax.min), get<Element>(*minmax.max)};
 	}
 	
+	template<arithmetic X, class Callable>
+	void in_steps(plot_axis_range<X> range, double dx, Callable&& func)
+	{
+		auto const x0 = std::ceil(range.min/dx)*dx;
+		size_t k = 0;
+		while(true)
+		{
+			auto const x = x0 + static_cast<double>(k)*dx;
+			if(x > range.max)
+			{ return; }
+			
+			func(k, x);
+			++k;
+		}
+	}
+	
 	template<plot_data_2d PlotData>
 	class plot_context_2d
 	{
@@ -171,6 +187,19 @@ namespace pretty
 				puts("\"/>");
 			}
 			
+			in_steps(m_x_range, m_x_tick_pitch,
+				[scale = m_scale, y_max_chars = std::data(m_y_max_chars)](auto, double x) {
+				write_raw("<text class=\"x_labels\" style=\"font-size:");
+				write_raw(std::data(to_char_buffer(text_height)));
+				write_raw("px\" text-anchor=\"middle\" dominant-baseline=\"hanging\" x=\"");
+				write_raw(std::data(to_char_buffer(scale*x)));
+				write_raw("\" y=\"");
+				write_raw(y_max_chars);
+				write_raw("\">");
+				write_raw(std::data(to_char_buffer(static_cast<float>(x))));
+				puts("</text>");
+			});
+			
 			// Draw x label
 			auto const x0 = std::ceil(m_x_range.min/m_x_tick_pitch)*m_x_tick_pitch;
 			auto const dx = m_x_tick_pitch;
@@ -180,15 +209,7 @@ namespace pretty
 				auto const x = x0 + static_cast<double>(k)*dx;
 				if(x > m_x_range.max)
 				{ break; }
-				write_raw("<text class=\"x_labels\" style=\"font-size:");
-				write_raw(std::data(to_char_buffer(text_height)));
-				write_raw("px\" text-anchor=\"middle\" dominant-baseline=\"hanging\" x=\"");
-				write_raw(std::data(to_char_buffer(m_scale*x)));
-				write_raw("\" y=\"");
-				write_raw(std::data(m_y_max_chars));
-				write_raw("\">");
-				write_raw(std::data(to_char_buffer(static_cast<float>(x))));
-				puts("</text>");
+
 				++k;
 			}
 /*
