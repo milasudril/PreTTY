@@ -158,7 +158,7 @@ namespace pretty
 				y <= m_y_range.max;
 				y += m_y_tick_pitch)
 			{
-				puts("<polyline class=\"y_grid\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
+				write_raw("<polyline class=\"y_grid\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
 				auto const ybuff = to_char_buffer(m_scale*(m_y_range.max + m_y_range.min - y));
 				write_raw(std::data(m_x_min_chars));
 				putchar(',');
@@ -169,7 +169,26 @@ namespace pretty
 				write_raw(std::data(ybuff));
 				puts("\"/>");
 			}
-
+			
+			// Draw x label
+			auto const x0 = std::ceil(m_x_range.min/m_x_tick_pitch)*m_x_tick_pitch;
+			auto const dx = m_x_tick_pitch;
+			size_t k = 0;
+			while(true)
+			{
+				auto const x = x0 + static_cast<double>(k)*dx;
+				if(x > m_x_range.max)
+				{ break; }
+				write_raw("<text class=\"x_labels\" text-anchor=\"middle\" dominant-baseline=\"hanging\" x=\"");
+				write_raw(std::data(to_char_buffer(m_scale*x)));
+				write_raw("\" y=\"");
+				write_raw(std::data(m_y_max_chars));
+				write_raw("\">");
+				write_raw(std::data(to_char_buffer(static_cast<float>(x))));
+				puts("</text>");
+				++k;
+			}
+/*
 			write_raw("<rect class=\"axis_box\" fill=\"none\" stroke-width=\"1\" stroke=\"red\" x=\"");
 			write_raw(std::data(m_x_min_chars));
 			write_raw("\" y=\"");
@@ -178,7 +197,8 @@ namespace pretty
 			write_raw(std::data(m_w_chars));
 			write_raw("\" height=\"");
 			write_raw(std::data(m_h_chars));
-			write_raw("\"/>");
+			puts("\"/>");
+*/
 			
 			puts("</svg>");
 			
