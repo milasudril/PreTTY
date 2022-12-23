@@ -152,7 +152,7 @@ void pretty::write_as_html(T const& x)
 	{
 		if(elements_have_same_size(x))
 		{
-			puts("<table>");
+			puts("<table class=\"tuple_content\">");
 			apply_adl([](auto const& ... args){
 				(print_table_row(args), ...);
 			}, x);
@@ -226,7 +226,7 @@ void pretty::write_as_html(R const& range)
 {
 	if constexpr(fwd_range_of_constexpr_sized_range<R>)
 	{
-		puts("<table>");
+		puts("<table class=\"range_content\">");
 		std::ranges::for_each(range, [](auto const& range){
 			print_table_row(range);
 		});
@@ -238,17 +238,20 @@ void pretty::write_as_html(R const& range)
 			return std::size(a) != std::size(b);
 		});
 
-		if(i == std::end(range))
+		if constexpr (has_table_row_formatter<std::ranges::range_value_t<R>>)
 		{
-			puts("<table>");
-			std::ranges::for_each(range, [](auto const& range){
-				print_table_row(range);
-			});
-			puts("</table>");
+			if(i == std::end(range))
+			{
+				puts("<table class=\"range_content\">");
+				std::ranges::for_each(range, [](auto const& range){
+					print_table_row(range);
+				});
+				puts("</table>");
+			}
 		}
 		else
 		{
-			puts("<ol start=\"0\">");
+			puts("<ol class=\"range_content\" start=\"0\">");
 			std::ranges::for_each(range, [](auto const& range) {
 				print_list_item(range);
 			});

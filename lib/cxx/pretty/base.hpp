@@ -33,12 +33,18 @@ namespace pretty
 
 	template<tuple T>
 	void print_table_row(T const& range);
-
+	
+	void print_table_row(std::string) = delete;
+	void print_table_row(std::string_view) = delete;
+	
 	template<class T>
-	concept has_table_row_formatter = requires(T x)
+	concept has_table_row_formatter = requires (T x)
 	{
 		{ print_table_row(x) };
 	};
+	
+	static_assert(!has_table_row_formatter<std::string>);
+	static_assert(!has_table_row_formatter<std::string_view>);
 
 	template<tuple T, size_t Index = 0>
 	constexpr bool elements_have_table_row_formatter();

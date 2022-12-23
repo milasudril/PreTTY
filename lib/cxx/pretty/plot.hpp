@@ -83,7 +83,9 @@ namespace pretty
 			plot_params_2d_t<PlotData> const& plot_params):
 			m_plot_data{plot_data},
 			m_x_range{plot_params.x_range.value_or(compute_range<0>(plot_data.get()))},
-			m_y_range{plot_params.x_range.value_or(compute_range<1>(plot_data.get()))}
+			m_y_range{plot_params.x_range.value_or(compute_range<1>(plot_data.get()))},
+			m_x_tick_base{static_cast<double>(plot_params.x_tick_base)},
+			m_y_tick_base{static_cast<double>(plot_params.y_tick_base)}
 		{
 			auto const w = m_x_range.max - m_x_range.min;
 			auto const h = m_y_range.max - m_y_range.min;
@@ -97,11 +99,16 @@ namespace pretty
 				m_scale*static_cast<double>(m_x_range.max)};
 			m_sy_range = plot_axis_range{m_scale*static_cast<double>(m_y_range.min),
 				m_scale*static_cast<double>(m_y_range.max)};
+			
+			m_x_tick_pitch = compute_tick_pitch(m_x_range, plot_params.x_tick_base);
+			m_y_tick_pitch = compute_tick_pitch(m_y_range, plot_params.x_tick_base);
 				
 			m_w_chars = to_char_buffer(m_w);
 			m_h_chars = to_char_buffer(m_h);
 			m_x_min_chars = to_char_buffer(m_sx_range.min);
+			m_x_max_chars = to_char_buffer(m_sx_range.max);
 			m_y_min_chars = to_char_buffer(m_sy_range.min);
+			m_y_max_chars = to_char_buffer(m_sy_range.max);
 		}
 		
 		void operator()() const
@@ -119,7 +126,7 @@ namespace pretty
 			write_raw(std::data(m_h_chars));
 			write_raw("\" width=\"100%\" height=\"100%\">");
 
-			puts("<polyline class=\"curve_00\" stroke-width=\"1\" stroke=\"blue\" points=\"");
+			puts("<polyline class=\"curve_00\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
 			std::ranges::for_each(m_plot_data.get(),
 				[scale = m_scale, y_range = m_y_range](auto const& item) {
 				auto const x = scale*get<0>(item);
@@ -129,9 +136,40 @@ namespace pretty
 				write_raw(std::data(to_char_buffer(y)));
 				putchar(' ');
 			});
-			puts("\" fill=\"none\"/>");
+			puts("/>");
 
-			// TODO: Should be possible to hide this
+			for(auto x = std::ceil(m_x_range.min*m_x_tick_base)/m_x_tick_base;
+				x <= m_x_range.max;
+				x += m_x_tick_pitch)
+			{
+				puts("<polyline class=\"x_grid\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
+				auto const xbuff = to_char_buffer(m_scale*x);
+				write_raw(std::data(xbuff));
+				putchar(',');
+				write_raw(std::data(m_y_min_chars));
+				putchar(' ');
+				write_raw(std::data(xbuff));
+				putchar(',');
+				write_raw(std::data(m_y_max_chars));
+				puts("\"/>");
+			}
+		
+			for(auto y = std::ceil(m_y_range.min*m_y_tick_base)/m_y_tick_base;
+				y <= m_y_range.max;
+				y += m_y_tick_pitch)
+			{
+				puts("<polyline class=\"y_grid\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
+				auto const ybuff = to_char_buffer(m_scale*(m_y_range.max + m_y_range.min - y));
+				write_raw(std::data(m_x_min_chars));
+				putchar(',');
+				write_raw(std::data(ybuff));
+				putchar(' ');
+				write_raw(std::data(m_x_max_chars));
+				putchar(',');
+				write_raw(std::data(ybuff));
+				puts("\"/>");
+			}
+
 			write_raw("<rect class=\"axis_box\" fill=\"none\" stroke-width=\"1\" stroke=\"red\" x=\"");
 			write_raw(std::data(m_x_min_chars));
 			write_raw("\" y=\"");
@@ -141,7 +179,7 @@ namespace pretty
 			write_raw("\" height=\"");
 			write_raw(std::data(m_h_chars));
 			write_raw("\"/>");
-
+			
 			puts("</svg>");
 			
 			puts("</figure>"); 
@@ -161,13 +199,17 @@ namespace pretty
 		plot_axis_range<double> m_sx_range;
 		plot_axis_range<double> m_sy_range;
 		
-		x_type m_x_tick_pitch;
-		y_type m_y_tick_pitch;
+		double m_x_tick_base;
+		double m_x_tick_pitch;
+		double m_y_tick_base;
+		double m_y_tick_pitch;
 		
 		std::array<char, 32> m_w_chars;
 		std::array<char, 32> m_h_chars;
 		std::array<char, 32> m_x_min_chars;
+		std::array<char, 32> m_x_max_chars;
 		std::array<char, 32> m_y_min_chars;
+		std::array<char, 32> m_y_max_chars;
 	};
 
 	template<plot_data_2d PlotData>
