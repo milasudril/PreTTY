@@ -78,7 +78,7 @@ void pretty::write_as_html(char ch)
 		printf(">");
 		break;
 	case '"':
-		printf("&quote;");
+		printf("&quot;");
 		break;
 
 	default:
