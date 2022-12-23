@@ -12,7 +12,8 @@ p, table{margin-top: 0.5rem;}
 
 table{margin-left:1rem; margin-right:1rem; border-collapse: collapse}
 td{vertical-align: top;}
-td{border-bottom: 1px solid; margin:0; border-color:Indigo;}
+td{border-bottom: 1px solid; border-color:Indigo;}
+table.single_row td {border: 0px solid}
 
 hr+p, hr{margin-top: 0.5rem;}
 
