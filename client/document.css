@@ -86,7 +86,7 @@ a{color:Indigo}
 a::hover{text-decoration:underline}
 a::visited{color:Indigo}
 
-.box, .pre
+.box, pre
 {
 	border:1px solid;
 	padding: 0.5rem;
