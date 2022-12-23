@@ -116,9 +116,7 @@ namespace pretty
 			
 			m_x_tick_pitch = compute_tick_pitch(m_x_range, plot_params.x_tick_base);
 			m_y_tick_pitch = compute_tick_pitch(m_y_range, plot_params.y_tick_base);
-				
-			m_w_chars = to_char_buffer(m_w);
-			m_h_chars = to_char_buffer(m_h);
+
 			m_x_min_chars = to_char_buffer(m_sx_range.min);
 			m_x_max_chars = to_char_buffer(m_sx_range.max);
 			m_y_min_chars = to_char_buffer(m_sy_range.min);
@@ -227,11 +225,11 @@ namespace pretty
 			write_raw("\" y=\"");
 			write_raw(std::data(m_y_min_chars));
 			write_raw("\" width=\"");
-			write_raw(std::data(m_w_chars));
+			write_raw(std::data(to_char_buffer(m_w)));
 			write_raw("\" height=\"");
-			write_raw(std::data(m_h_chars));
-			puts("\"/>");			
-			puts("</svg>");			
+			write_raw(std::data(to_char_buffer(m_h)));
+			puts("\"/>");
+			puts("</svg>");
 			puts("</figure>"); 
 		}
 		
@@ -251,9 +249,7 @@ namespace pretty
 
 		double m_x_tick_pitch;
 		double m_y_tick_pitch;
-		
-		std::array<char, 32> m_w_chars;
-		std::array<char, 32> m_h_chars;
+
 		std::array<char, 32> m_x_min_chars;
 		std::array<char, 32> m_x_max_chars;
 		std::array<char, 32> m_y_min_chars;
