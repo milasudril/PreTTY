@@ -35,3 +35,13 @@ code, pre{font-family: "Cascadia code"}
 	content: "[" counter(list-item) "]\00A0";
 	font-size: small
 }
+
+figure
+{
+	max-width:62%;
+	max-height:38vh; 
+	aspect-ratio:16/10;
+	border:1px solid;
+	margin-left:auto;
+	margin-right:auto
+}

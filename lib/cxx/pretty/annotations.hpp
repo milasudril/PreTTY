@@ -50,16 +50,37 @@ namespace pretty
 	{
 		[[nodiscard]] box()
 		{
-			write_raw("<div class=\"box\">");
+			puts("<div class=\"box\">");
 		}
 
 		~box()
 		{
-			write_raw("</div>");
+			puts("</div>");
 			fflush(stdout);
 		}
 
 		std::lock_guard<std::recursive_mutex> lock{output_mutex};
+	};
+	
+	template<class Caption>
+	class figure
+	{
+	public:
+		[[nodiscard]] explicit figure(Caption caption):
+			m_caption{caption}
+		{
+			write_raw("<figure>");
+		}
+		
+		~figure()
+		{
+			write_as_html(m_caption);
+			puts("</figure>");
+			fflush(stdout);
+		}
+		
+	private:
+		Caption m_caption;
 	};
 }
 #endif

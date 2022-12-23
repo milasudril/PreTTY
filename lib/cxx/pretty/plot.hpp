@@ -125,9 +125,6 @@ namespace pretty
 		
 		void operator()() const
 		{
-			// TODO: "Figure" wrapper should be treated similarly to the "Box" wrapper
-			puts("<figure style=\"max-width:62%; max-height:38vh; aspect-ratio:16/10; border:1px solid; margin-left:auto; margin-right:auto\">");
-			
 			constexpr auto text_height = 16;
 			write_raw("<svg viewbox=\"");
 			write_raw(std::data(to_char_buffer(m_sx_range.min - 4*text_height)));
@@ -230,7 +227,6 @@ namespace pretty
 			write_raw(std::data(to_char_buffer(m_h)));
 			puts("\"/>");
 			puts("</svg>");
-			puts("</figure>"); 
 		}
 		
 	private:
