@@ -83,9 +83,7 @@ namespace pretty
 			plot_params_2d_t<PlotData> const& plot_params):
 			m_plot_data{plot_data},
 			m_x_range{plot_params.x_range.value_or(compute_range<0>(plot_data.get()))},
-			m_y_range{plot_params.x_range.value_or(compute_range<1>(plot_data.get()))},
-			m_x_tick_base{static_cast<double>(plot_params.x_tick_base)},
-			m_y_tick_base{static_cast<double>(plot_params.y_tick_base)}
+			m_y_range{plot_params.x_range.value_or(compute_range<1>(plot_data.get()))}
 		{
 			auto const w = m_x_range.max - m_x_range.min;
 			auto const h = m_y_range.max - m_y_range.min;
@@ -101,7 +99,7 @@ namespace pretty
 				m_scale*static_cast<double>(m_y_range.max)};
 			
 			m_x_tick_pitch = compute_tick_pitch(m_x_range, plot_params.x_tick_base);
-			m_y_tick_pitch = compute_tick_pitch(m_y_range, plot_params.x_tick_base);
+			m_y_tick_pitch = compute_tick_pitch(m_y_range, plot_params.y_tick_base);
 				
 			m_w_chars = to_char_buffer(m_w);
 			m_h_chars = to_char_buffer(m_h);
@@ -138,7 +136,8 @@ namespace pretty
 			});
 			puts("/>");
 
-			for(auto x = std::ceil(m_x_range.min*m_x_tick_base)/m_x_tick_base;
+			// Draw x grid
+			for(auto x = std::ceil(m_x_range.min/m_x_tick_pitch)*m_x_tick_pitch;
 				x <= m_x_range.max;
 				x += m_x_tick_pitch)
 			{
@@ -154,7 +153,8 @@ namespace pretty
 				puts("\"/>");
 			}
 		
-			for(auto y = std::ceil(m_y_range.min*m_y_tick_base)/m_y_tick_base;
+			// Draw y grid
+			for(auto y = std::ceil(m_y_range.min*m_y_tick_pitch)/m_y_tick_pitch;
 				y <= m_y_range.max;
 				y += m_y_tick_pitch)
 			{
@@ -198,10 +198,8 @@ namespace pretty
 		double m_h;
 		plot_axis_range<double> m_sx_range;
 		plot_axis_range<double> m_sy_range;
-		
-		double m_x_tick_base;
+
 		double m_x_tick_pitch;
-		double m_y_tick_base;
 		double m_y_tick_pitch;
 		
 		std::array<char, 32> m_w_chars;
