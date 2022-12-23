@@ -154,7 +154,7 @@ namespace pretty
 			}
 		
 			// Draw y grid
-			for(auto y = std::ceil(m_y_range.min*m_y_tick_pitch)/m_y_tick_pitch;
+			for(auto y = std::ceil(m_y_range.min/m_y_tick_pitch)*m_y_tick_pitch;
 				y <= m_y_range.max;
 				y += m_y_tick_pitch)
 			{
