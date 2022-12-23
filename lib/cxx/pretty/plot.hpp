@@ -121,7 +121,8 @@ namespace pretty
 			putchar(' ');
 			write_raw(std::data(m_w_chars));
 			putchar(' ');
-			write_raw(std::data(m_h_chars));
+			constexpr auto text_height = 16;
+			write_raw(std::data(to_char_buffer(m_h + text_height)));
 			write_raw("\" width=\"100%\" height=\"100%\">");
 
 			puts("<polyline class=\"curve_00\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
@@ -179,7 +180,9 @@ namespace pretty
 				auto const x = x0 + static_cast<double>(k)*dx;
 				if(x > m_x_range.max)
 				{ break; }
-				write_raw("<text class=\"x_labels\" text-anchor=\"middle\" dominant-baseline=\"hanging\" x=\"");
+				write_raw("<text class=\"x_labels\" style=\"font-size:");
+				write_raw(std::data(to_char_buffer(text_height)));
+				write_raw("px\" text-anchor=\"middle\" dominant-baseline=\"hanging\" x=\"");
 				write_raw(std::data(to_char_buffer(m_scale*x)));
 				write_raw("\" y=\"");
 				write_raw(std::data(m_y_max_chars));
