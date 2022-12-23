@@ -1,10 +1,91 @@
-@import url(https://latex.now.sh/style.min.css);
+*{ margin: 0; }
 
 body{max-width: 100%; line-height: 1.5}
 *{font-family: "Andika";}
 code, pre{font-family: "Cascadia code"}
 
-.box
+body{background-color:Ivory; padding: 1rem}
+
+hr{border: 1px: solid}
+
+p, table{margin-top: 0.5rem;}
+
+table{margin-left:1rem; margin-right:1rem; border-collapse: collapse}
+td{vertical-align: top;}
+td{border-bottom: 1px solid; margin:0; border-color:Indigo;}
+
+hr+p, hr{margin-top: 0.5rem;}
+
+h1
+{
+	font-size: 2.5rem;
+	line-height: 3.25rem;
+	margin-bottom: 1.625rem;
+	text-align: center
+}
+
+h2 {
+  font-size: 1.7rem;
+  line-height: 2rem;
+  margin-top: 3rem;
+}
+
+h3 {
+  font-size: 1.4rem;
+  margin-top: 2.5rem;
+}
+
+h4 {
+  font-size: 1.2rem;
+  margin-top: 2rem;
+}
+
+h5 {
+  font-size: 1rem;
+  margin-top: 1.8rem;
+}
+
+h6 {
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: normal;
+  margin-top: 2.5rem;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.625rem;
+}
+
+h1 + h2 {
+  margin-top: 1.625rem;
+}
+
+h2 + h3,
+h3 + h4,
+h4 + h5 {
+  margin-top: 0.8rem;
+}
+
+h5 + h6 {
+  margin-top: -0.8rem;
+}
+
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: 0.8rem;
+}
+
+a{color:Indigo}
+a::hover{text-decoration:underline}
+a::visited{color:Indigo}
+
+.box, .pre
 {
 	border:1px solid;
 	padding: 0.5rem;
@@ -41,7 +122,6 @@ figure
 	max-width:62%;
 	max-height:38vh; 
 	aspect-ratio:16/10;
-	border:1px solid;
 	margin-left:auto;
 	margin-right:auto
 }
