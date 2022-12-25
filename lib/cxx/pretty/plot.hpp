@@ -116,6 +116,9 @@ namespace pretty
 		}
 	}
 
+	inline constexpr std::string_view curve_ids{"0123456789abcdef"};
+	static_assert(std::size(curve_ids) == 16);
+
 	template<std::ranges::forward_range R>
 	requires(plot_data_2d<std::ranges::range_value_t<R>>)
 	class plot_context_2d
@@ -175,7 +178,9 @@ namespace pretty
 
 			std::ranges::for_each(m_plot_data.get(), [k = static_cast<size_t>(0), &print_coord]
 				(auto const& curve) mutable {
-				puts("<polyline class=\"curve_00\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
+				write_raw("<polyline class=\"curve_");
+				putchar(curve_ids[k%std::size(curve_ids)]);
+				puts("\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
 				std::ranges::for_each(curve, print_coord);
 				++k;
 				puts("\"/>");
@@ -185,7 +190,7 @@ namespace pretty
 			in_steps(m_x_range, m_x_tick_pitch,
 				[scale = m_scale, y_min_chars = std::data(m_y_min_chars), y_max_chars = std::data(m_y_max_chars)]
 				(auto, double x) {
-				puts("<polyline class=\"x_grid\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
+				puts("<polyline class=\"x_grid\" stroke-width=\"1\" fill=\"none\" points=\"");
 				auto const xbuff = to_char_buffer(scale*x);
 				write_raw(std::data(xbuff));
 				putchar(',');
@@ -204,7 +209,7 @@ namespace pretty
 					x_max_chars = std::data(m_x_max_chars),
 					y_range=m_y_range]
 				(auto, double y) {
-				write_raw("<polyline class=\"y_grid\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
+				write_raw("<polyline class=\"y_grid\" stroke-width=\"1\" fill=\"none\" points=\"");
 				auto const ybuff = to_char_buffer(scale*(y_range.max + y_range.min - y));
 				write_raw(x_min_chars);
 				putchar(',');

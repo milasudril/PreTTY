@@ -96,9 +96,14 @@ figure
 	margin-right:auto
 }
 
-polyline.curve_00
+polyline.curve_0
 {
-	stroke: Indigo;
+	stroke: blue;
+}
+
+polyline.curve_1
+{
+	stroke: red;
 }
 
 polyline.x_grid, polyline.y_grid
