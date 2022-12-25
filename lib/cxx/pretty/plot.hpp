@@ -2,7 +2,10 @@
 #define PRETTY_PLOT_HPP
 
 #include "./base.hpp"
+
 #include <cmath>
+#include <span>
+#include <cassert>
 
 namespace pretty
 {
@@ -68,13 +71,35 @@ namespace pretty
 	template<size_t Element, plot_data_2d PlotData>
 	auto compute_range(PlotData const& data)
 	{
+		assert(std::begin(data) != std::end(data));
+
 		auto minmax = std::ranges::minmax_element(data, [](auto const& a, auto const& b) {
 			return get<Element>(a) < get<Element>(b);
 		});
 
 		return plot_axis_range{get<Element>(*minmax.min), get<Element>(*minmax.max)};
 	}
-	
+
+	template<size_t Element, std::ranges::forward_range R>
+	requires(plot_data_2d<std::ranges::range_value_t<R>>)
+	auto compute_range(R const& plot_data_range)
+	{
+		auto current = std::begin(plot_data_range);
+		auto const end = std::end(plot_data_range);
+		assert(current != end);
+
+		auto ret = compute_range<Element>(*current);
+		++current;
+		while(current != std::end(plot_data_range))
+		{
+			auto const tmp = compute_range<Element>(*current);
+			ret = plot_axis_range{std::min(tmp.min, ret.min), std::max(tmp.max, ret.max)};
+			++current;
+		}
+
+		return ret;
+	}
+
 	template<arithmetic X, class Callable>
 	void in_steps(plot_axis_range<X> range, double dx, Callable&& func)
 	{
@@ -90,16 +115,19 @@ namespace pretty
 			++k;
 		}
 	}
-	
-	template<plot_data_2d PlotData>
+
+	template<std::ranges::forward_range R>
+	requires(plot_data_2d<std::ranges::range_value_t<R>>)
 	class plot_context_2d
 	{
 	public:
-		explicit plot_context_2d(std::reference_wrapper<PlotData const> plot_data,
+		using PlotData = std::decay_t<std::ranges::range_value_t<R>>;
+
+		explicit plot_context_2d(R const& plot_data,
 			plot_params_2d_t<PlotData> const& plot_params):
 			m_plot_data{plot_data},
-			m_x_range{plot_params.x_range.value_or(compute_range<0>(plot_data.get()))},
-			m_y_range{plot_params.x_range.value_or(compute_range<1>(plot_data.get()))}
+			m_x_range{plot_params.x_range.value_or(compute_range<0>(plot_data))},
+			m_y_range{plot_params.x_range.value_or(compute_range<1>(plot_data))}
 		{
 			auto const w = m_x_range.max - m_x_range.min;
 			auto const h = m_y_range.max - m_y_range.min;
@@ -136,17 +164,22 @@ namespace pretty
 			write_raw(std::data(to_char_buffer(m_h + 2.5*text_height)));
 			write_raw("\">");
 
-			puts("<polyline class=\"curve_00\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
-			std::ranges::for_each(m_plot_data.get(),
-				[scale = m_scale, y_range = m_y_range](auto const& item) {
-				auto const x = scale*get<0>(item);
-				auto const y = scale*(y_range.max + y_range.min - get<1>(item));
-				write_raw(std::data(to_char_buffer(x)));
-				putchar(',');
-				write_raw(std::data(to_char_buffer(y)));
-				putchar(' ');
+			auto const print_coord = [scale = m_scale, y_range = m_y_range](auto const& item) {
+					auto const x = scale*get<0>(item);
+					auto const y = scale*(y_range.max + y_range.min - get<1>(item));
+					write_raw(std::data(to_char_buffer(x)));
+					putchar(',');
+					write_raw(std::data(to_char_buffer(y)));
+					putchar(' ');
+				};
+
+			std::ranges::for_each(m_plot_data.get(), [k = static_cast<size_t>(0), &print_coord]
+				(auto const& curve) mutable {
+				puts("<polyline class=\"curve_00\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
+				std::ranges::for_each(curve, print_coord);
+				++k;
+				puts("\"/>");
 			});
-			puts("\"/>");
 
 			// Draw x grid
 			in_steps(m_x_range, m_x_tick_pitch,
@@ -230,7 +263,7 @@ namespace pretty
 		}
 		
 	private:
-		std::reference_wrapper<PlotData const> m_plot_data;
+		std::reference_wrapper<R const> m_plot_data;
 		
 		using x_type = typename plot_2d_coord_types<PlotData>::x_type;
 		using y_type = typename plot_2d_coord_types<PlotData>::y_type;
@@ -256,7 +289,15 @@ namespace pretty
 	void plot(PlotData const& plot_data,
 		plot_params_2d_t<PlotData> const& plot_params = plot_params_2d_t<PlotData>{})
 	{
-		atomic_write(plot_context_2d{std::ref(plot_data), plot_params});
+		atomic_write(plot_context_2d{std::span<PlotData const, 1>{&plot_data, 1}, plot_params});
+	}
+
+	template<std::ranges::forward_range R>
+	requires(plot_data_2d<std::ranges::range_value_t<R>>)
+	void plot(R const& plot_data,
+		plot_params_2d_t<std::ranges::range_value_t<R>> const& plot_params = plot_params_2d_t<std::ranges::range_value_t<R>>{})
+	{
+		atomic_write(plot_context_2d{plot_data, plot_params});
 	}
 }
 
