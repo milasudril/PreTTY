@@ -204,6 +204,7 @@ void pretty::print_table_row(R const& range)
 }
 
 template<pretty::tuple T>
+requires(!std::ranges::forward_range<T>)
 void pretty::print_table_row(T const& item)
 {
 	puts("<tr>");

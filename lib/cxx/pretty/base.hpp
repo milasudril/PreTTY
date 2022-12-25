@@ -32,6 +32,7 @@ namespace pretty
 	void print_table_row(R const& range);
 
 	template<tuple T>
+	requires(!std::ranges::forward_range<T>)
 	void print_table_row(T const& range);
 	
 	void print_table_row(std::string) = delete;
