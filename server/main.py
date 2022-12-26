@@ -48,9 +48,10 @@ def pump_data(src_fd, dest, buffer_size):
 def get_mime_from_path(src):
 	return mimetypes.guess_type(src)[0]
 
-def compile_single_src_cxx_file(src_file, exec_name, log_stream):
+def compile_single_src_cxx_file(src_file, orig_src_dir, exec_name, log_stream):
 	cxx_inc_dir = app_dir / 'lib' / 'cxx'
 	with subprocess.Popen(['g++',
+		'-iquote%s'%orig_src_dir,
 		('-I%s'%cxx_inc_dir),
 		'-std=c++20',
 		'-O3',
@@ -101,7 +102,7 @@ def run_executable(exec_name, log_stream):
 			return True
 
 
-def build_and_run(source_code, output_stream, api_key):
+def build_and_run(source_code, orig_src_dir, output_stream, api_key):
 	write_text('''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -122,7 +123,7 @@ def build_and_run(source_code, output_stream, api_key):
 			write_text(source_code, src_file)
 
 		exec_name = temp_dir + '/src.out'
-		if compile_single_src_cxx_file(src_file_name, exec_name, output_stream):
+		if compile_single_src_cxx_file(src_file_name, orig_src_dir, exec_name, output_stream):
 			output_stream.flush()
 			print_delimiter(output_stream)
 			output_stream.flush()
@@ -239,7 +240,10 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 			if self.path == '/build_and_run':
 				write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
 					self.request_version, self.wfile)
-				build_and_run(parsed_data['source'][0], self.wfile, self.api_key)
+				# HACK: There is no support for sessions on server side. Use a path provided by the
+				# client to set source file TemporaryDirectory
+				src_dir = Path(parsed_data['filename'][0]).parents[0]
+				build_and_run(parsed_data['source'][0], src_dir, self.wfile, self.api_key)
 				return
 
 			self.wfile.write(('%s 400 Bad request %s\r\n' % (self.request_version, self.path)).encode('utf-8'))
