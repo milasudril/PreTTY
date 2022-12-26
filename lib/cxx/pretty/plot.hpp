@@ -17,6 +17,9 @@ namespace pretty
 	{
 		X min;
 		X max;
+		
+		bool empty() const
+		{ return min == max; }
 	};
 	
 	template<arithmetic X>
@@ -132,6 +135,9 @@ namespace pretty
 			m_x_range{plot_params.x_range.value_or(compute_range<0>(plot_data))},
 			m_y_range{plot_params.x_range.value_or(compute_range<1>(plot_data))}
 		{
+			assert(!m_x_range.empty());
+			assert(!m_y_range.empty());
+
 			auto const w = m_x_range.max - m_x_range.min;
 			auto const h = m_y_range.max - m_y_range.min;
 			m_w = static_cast<double>(w);
