@@ -171,7 +171,7 @@ namespace pretty
 			write_raw(std::data(to_char_buffer(m_w + 8*text_height)));
 			putchar(' ');
 			write_raw(std::data(to_char_buffer(m_h + 2.5*text_height)));
-			write_raw("\">");
+			puts("\">");
 
 			auto const print_coord = [scale = m_scale, y_range = m_y_range](auto const& item) {
 					auto const x = scale*get<0>(item);
@@ -186,7 +186,7 @@ namespace pretty
 				(auto const& curve) mutable {
 				write_raw("<polyline class=\"curve_");
 				putchar(curve_ids[k%std::size(curve_ids)]);
-				puts("\" stroke-width=\"1\" stroke=\"blue\" fill=\"none\" points=\"");
+				puts("\" stroke-width=\"1\" fill=\"none\" points=\"");
 				std::ranges::for_each(curve, print_coord);
 				++k;
 				puts("\"/>");

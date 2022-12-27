@@ -97,13 +97,44 @@ figure
 
 polyline.curve_0
 {
-	stroke: blue;
+	stroke: firebrick;
 }
 
 polyline.curve_1
 {
-	stroke: red;
+	stroke: deeppink;
 }
+
+polyline.curve_2
+{
+	stroke: tomato;
+}
+
+polyline.curve_3
+{
+	stroke: deeppink;
+}
+
+polyline.curve_4
+{
+	stroke: DarkKhaki;
+}
+
+polyline.curve_5
+{
+	stroke: MediumSeaGreen;
+}
+
+polyline.curve_6
+{
+	stroke: Teal;
+}
+
+polyline.curve_7
+{
+	stroke: RoyalBlue;
+}
+
 
 polyline.x_grid, polyline.y_grid
 {
