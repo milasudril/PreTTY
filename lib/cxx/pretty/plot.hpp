@@ -39,7 +39,7 @@ namespace pretty
 		std::optional<plot_axis_range<X>> x_range;
 		std::optional<plot_axis_range<Y>> y_range;
 		unsigned int x_tick_base = 5;
-		unsigned int y_tick_base = 10;
+		unsigned int y_tick_base = 5;
 	};
 
 	template<class T>
