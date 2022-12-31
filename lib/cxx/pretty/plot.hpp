@@ -174,22 +174,36 @@ namespace pretty
 			puts("\">");
 
 			auto const print_coord = [scale = m_scale, y_range = m_y_range](auto const& item) {
-					auto const x = scale*get<0>(item);
-					auto const y = scale*(y_range.max + y_range.min - get<1>(item));
-					write_raw(std::data(to_char_buffer(x)));
-					putchar(',');
-					write_raw(std::data(to_char_buffer(y)));
-					putchar(' ');
-				};
+				auto const x = scale*get<0>(item);
+				auto const y = scale*(y_range.max + y_range.min - get<1>(item));
+				write_raw(std::data(to_char_buffer(x)));
+				putchar(',');
+				write_raw(std::data(to_char_buffer(y)));
+				putchar(' ');
+			};
+#if 1
+//			TODO
+			auto const draw_marker = [scale = m_scale, y_range = m_y_range](auto const& item) {
+				auto const x = scale*get<0>(item);
+				auto const y = scale*(y_range.max + y_range.min - get<1>(item));
+				write_raw("<circle cx=\"");
+				write_raw(std::data(to_char_buffer(x)));
+				write_raw("\" cy=\"");
+				write_raw(std::data(to_char_buffer(y)));
+				puts("\" r=\"2\" fill=\"blue\" stroke=\"none\"/>");
+			};
+#endif
 
-			std::ranges::for_each(m_plot_data.get(), [k = static_cast<size_t>(0), &print_coord]
+			std::ranges::for_each(m_plot_data.get(), [k = static_cast<size_t>(0), &print_coord, &draw_marker]
 				(auto const& curve) mutable {
 				write_raw("<polyline class=\"curve_");
 				putchar(curve_ids[k%std::size(curve_ids)]);
-				puts("\" stroke-width=\"1\" fill=\"none\" points=\"");
+				puts("\" stroke=\"blue\" \"stroke-width=\"1\" fill=\"none\" points=\"");
 				std::ranges::for_each(curve, print_coord);
 				++k;
 				puts("\"/>");
+				
+				std::ranges::for_each(curve, draw_marker);
 			});
 
 			// Draw x grid

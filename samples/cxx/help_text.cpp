@@ -6,6 +6,7 @@
 #include <numbers>
 #include <vector>
 #include <map>
+#include <ranges>
 
 extern char** environ;
 
@@ -81,4 +82,6 @@ int main()
 			}
 		}
 	});
+
+	pretty::print(std::ranges::iota_view{0, 10});
 }
