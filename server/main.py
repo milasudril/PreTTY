@@ -240,9 +240,15 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 			if self.path == '/build_and_run':
 				write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
 					self.request_version, self.wfile)
-				# HACK: There is no support for sessions on server side. Use a path provided by the
-				# client to set source file TemporaryDirectory
-				src_dir = Path(parsed_data['filename'][0]).parents[0]
+				print('Hej')
+				src_dir = ''
+				if 'filename' in parsed_data and len(parsed_data['filename'][0]) > 0:
+					print('Filename is %s'%parsed_data['filename'][0])
+					# HACK: There is currently no support for sessions on server side. Use a path
+					# provided by the client to set source file TemporaryDirectory
+					src_dir = Path(parsed_data['filename'][0]).parents[0]
+
+				print('src_dir %s'%src_dir)
 				build_and_run(parsed_data['source'][0], src_dir, self.wfile, self.api_key)
 				return
 
