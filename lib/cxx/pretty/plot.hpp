@@ -17,11 +17,11 @@ namespace pretty
 	{
 		X min;
 		X max;
-
+		
 		bool empty() const
 		{ return min == max; }
 	};
-
+	
 	template<arithmetic X>
 	auto compute_tick_pitch(plot_axis_range<X> const& range, unsigned int tick_base)
 	{
@@ -29,7 +29,7 @@ namespace pretty
 		auto const logl = std::round(std::log(length)/std::log(static_cast<double>(tick_base)));
 		return std::pow(tick_base, logl - 1.0);
 	}
-
+	
 	template<arithmetic X, arithmetic Y>
 	struct plot_params_2d
 	{
@@ -45,13 +45,13 @@ namespace pretty
 	template<class T>
 	concept plot_point_2d = tuple<T> && requires(T x)
 	{
-		{get<0>(x)} -> std::convertible_to<arithmetic>;
-		{get<1>(x)} -> std::convertible_to<arithmetic>;
+		{get<0>(x)} -> arithmetic;
+		{get<1>(x)} -> arithmetic;
 	};
 
 	template<class T>
 	concept plot_data_2d = std::ranges::forward_range<T> && plot_point_2d<std::ranges::range_value_t<T>>;
-
+	
 	template<plot_data_2d T>
 	struct plot_2d_coord_types
 	{
@@ -113,7 +113,7 @@ namespace pretty
 			auto const x = x0 + static_cast<double>(k)*dx;
 			if(x > range.max)
 			{ return; }
-
+			
 			func(k, x);
 			++k;
 		}
@@ -142,7 +142,7 @@ namespace pretty
 			auto const h = m_y_range.max - m_y_range.min;
 			m_w = static_cast<double>(w);
 			m_h = static_cast<double>(h);
-
+			
 			m_scale = 512.0/std::max(m_w, m_h);
 			m_w *= m_scale;
 			m_h *= m_scale;
@@ -150,7 +150,7 @@ namespace pretty
 				m_scale*static_cast<double>(m_x_range.max)};
 			m_sy_range = plot_axis_range{m_scale*static_cast<double>(m_y_range.min),
 				m_scale*static_cast<double>(m_y_range.max)};
-
+			
 			m_x_tick_pitch = compute_tick_pitch(m_x_range, plot_params.x_tick_base);
 			m_y_tick_pitch = compute_tick_pitch(m_y_range, plot_params.y_tick_base);
 
@@ -159,7 +159,7 @@ namespace pretty
 			m_y_min_chars = to_char_buffer(m_sy_range.min);
 			m_y_max_chars = to_char_buffer(m_sy_range.max);
 		}
-
+		
 		void operator()() const
 		{
 			constexpr auto text_height = 16;
@@ -198,11 +198,11 @@ namespace pretty
 				(auto const& curve) mutable {
 				write_raw("<polyline class=\"curve_");
 				putchar(curve_ids[k%std::size(curve_ids)]);
-				puts("\" stroke=\"blue\" stroke-width=\"1\" fill=\"none\" points=\"");
+				puts("\" stroke=\"blue\" \"stroke-width=\"1\" fill=\"none\" points=\"");
 				std::ranges::for_each(curve, print_coord);
 				++k;
 				puts("\"/>");
-
+				
 				std::ranges::for_each(curve, draw_marker);
 			});
 
@@ -221,7 +221,7 @@ namespace pretty
 				write_raw(y_max_chars);
 				puts("\"/>");
 			});
-
+		
 			// Draw y grid
 			in_steps(m_y_range, m_y_tick_pitch,
 				[scale = m_scale,
@@ -286,13 +286,13 @@ namespace pretty
 			puts("\"/>");
 			puts("</svg>");
 		}
-
+		
 	private:
 		std::reference_wrapper<R const> m_plot_data;
-
+		
 		using x_type = typename plot_2d_coord_types<PlotData>::x_type;
 		using y_type = typename plot_2d_coord_types<PlotData>::y_type;
-
+		
 		plot_axis_range<x_type> m_x_range;
 		plot_axis_range<y_type> m_y_range;
 		double m_scale;
