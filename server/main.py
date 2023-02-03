@@ -50,9 +50,10 @@ def get_mime_from_path(src):
 
 def compile_single_src_cxx_file(src_file, orig_src_dir, exec_name, log_stream):
 	cxx_inc_dir = app_dir / 'lib' / 'cxx'
+	print(cxx_inc_dir)
 	with subprocess.Popen(['g++',
 		'-iquote%s'%orig_src_dir,
-		('-I%s'%cxx_inc_dir),
+		'-I%s'%cxx_inc_dir,
 		'-std=c++20',
 		'-O3',
 		'-ffast-math',
@@ -240,8 +241,7 @@ class HttpReqHandler(http.server.SimpleHTTPRequestHandler):
 			if self.path == '/build_and_run':
 				write_text('%s 200\r\nContent-Type: text/html\r\n\r\n' %
 					self.request_version, self.wfile)
-				print('Hej')
-				src_dir = ''
+				src_dir = '.'
 				if 'filename' in parsed_data and len(parsed_data['filename'][0]) > 0:
 					print('Filename is %s'%parsed_data['filename'][0])
 					# HACK: There is currently no support for sessions on server side. Use a path
