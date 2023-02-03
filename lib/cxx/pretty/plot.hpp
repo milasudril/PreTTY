@@ -40,6 +40,9 @@ namespace pretty
 		std::optional<plot_axis_range<Y>> y_range;
 		unsigned int x_tick_base = 5;
 		unsigned int y_tick_base = 5;
+
+		// TODO: Marker should have a size and a color...
+		std::optional<std::type_identity<void>> marker;
 	};
 
 	template<class T>
@@ -133,7 +136,8 @@ namespace pretty
 			plot_params_2d_t<PlotData> const& plot_params):
 			m_plot_data{plot_data},
 			m_x_range{plot_params.x_range.value_or(compute_range<0>(plot_data))},
-			m_y_range{plot_params.x_range.value_or(compute_range<1>(plot_data))}
+			m_y_range{plot_params.x_range.value_or(compute_range<1>(plot_data))},
+			m_marker{plot_params.marker}
 		{
 			assert(!m_x_range.empty());
 			assert(!m_y_range.empty());
@@ -181,36 +185,49 @@ namespace pretty
 				write_raw(std::data(to_char_buffer(y)));
 				putchar(' ');
 			};
-#if 1
-//			TODO
-			auto const draw_marker = [scale = m_scale, y_range = m_y_range](auto const& item) {
-				auto const x = scale*get<0>(item);
-				auto const y = scale*(y_range.max + y_range.min - get<1>(item));
-				write_raw("<circle cx=\"");
-				write_raw(std::data(to_char_buffer(x)));
-				write_raw("\" cy=\"");
-				write_raw(std::data(to_char_buffer(y)));
-				puts("\" r=\"2\" fill=\"blue\" stroke=\"none\"/>");
-			};
-#endif
 
-			std::ranges::for_each(m_plot_data.get(), [k = static_cast<size_t>(0), &print_coord, &draw_marker]
-				(auto const& curve) mutable {
-				write_raw("<polyline class=\"curve_");
-				putchar(curve_ids[k%std::size(curve_ids)]);
-				puts("\" stroke=\"blue\" \"stroke-width=\"1\" fill=\"none\" points=\"");
-				std::ranges::for_each(curve, print_coord);
-				++k;
-				puts("\"/>");
+			if(m_marker.has_value())
+			{
+				auto const draw_marker = [scale = m_scale, y_range = m_y_range](auto const& item) {
+					auto const x = scale*get<0>(item);
+					auto const y = scale*(y_range.max + y_range.min - get<1>(item));
+					write_raw("<circle cx=\"");
+					write_raw(std::data(to_char_buffer(x)));
+					write_raw("\" cy=\"");
+					write_raw(std::data(to_char_buffer(y)));
+					write_raw("\" r=\"2\" fill=\"blue\" stroke=\"none\"/>");
+				};
 
-				std::ranges::for_each(curve, draw_marker);
-			});
+				std::ranges::for_each(m_plot_data.get(), [k = static_cast<size_t>(0), &print_coord, &draw_marker]
+					(auto const& curve) mutable {
+					write_raw("<polyline class=\"curve_");
+					putchar(curve_ids[k%std::size(curve_ids)]);
+					write_raw("\" stroke=\"blue\" stroke-width=\"1\" fill=\"none\" points=\"");
+					std::ranges::for_each(curve, print_coord);
+					++k;
+					puts("\"/>");
+
+					std::ranges::for_each(curve, draw_marker);
+				});
+			}
+			else
+			{
+				std::ranges::for_each(m_plot_data.get(), [k = static_cast<size_t>(0), &print_coord]
+					(auto const& curve) mutable {
+					write_raw("<polyline class=\"curve_");
+					putchar(curve_ids[k%std::size(curve_ids)]);
+					write_raw("\" stroke=\"blue\" stroke-width=\"1\" fill=\"none\" points=\"");
+					std::ranges::for_each(curve, print_coord);
+					++k;
+					puts("\"/>");
+				});
+			}
 
 			// Draw x grid
 			in_steps(m_x_range, m_x_tick_pitch,
 				[scale = m_scale, y_min_chars = std::data(m_y_min_chars), y_max_chars = std::data(m_y_max_chars)]
 				(auto, double x) {
-				puts("<polyline class=\"x_grid\" stroke-width=\"1\" fill=\"none\" points=\"");
+				write_raw("<polyline class=\"x_grid\" stroke-width=\"1\" fill=\"none\" points=\"");
 				auto const xbuff = to_char_buffer(scale*x);
 				write_raw(std::data(xbuff));
 				putchar(',');
@@ -283,7 +300,7 @@ namespace pretty
 			write_raw(std::data(to_char_buffer(m_w)));
 			write_raw("\" height=\"");
 			write_raw(std::data(to_char_buffer(m_h)));
-			puts("\"/>");
+			write_raw("\"/>\n");
 			puts("</svg>");
 		}
 
@@ -308,6 +325,7 @@ namespace pretty
 		std::array<char, 32> m_x_max_chars;
 		std::array<char, 32> m_y_min_chars;
 		std::array<char, 32> m_y_max_chars;
+		std::optional<std::type_identity<void>> m_marker;
 	};
 
 	template<plot_data_2d PlotData>
