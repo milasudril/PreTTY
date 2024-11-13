@@ -15,7 +15,6 @@ namespace pretty
 	concept tuple = requires(T x)
 	{
 		{get<0>(x)};
-
 		{std::tuple_size<T>::value};
 	};
 
@@ -34,20 +33,20 @@ namespace pretty
 	template<tuple T>
 	requires(!std::ranges::forward_range<T>)
 	void print_table_row(T const& range);
-	
+
 	void print_table_row(std::string) = delete;
 	void print_table_row(std::string_view) = delete;
-	
+
 	template<class T>
 	concept has_table_row_formatter = requires (T x)
 	{
 		{ print_table_row(x) };
 	};
-	
+
 	static_assert(!has_table_row_formatter<std::string>);
 	static_assert(!has_table_row_formatter<std::string_view>);
 
-	template<tuple T, size_t Index = 0>
+	template<tuple T, size_t Index>
 	constexpr bool elements_have_table_row_formatter();
 
 	template<class T>
@@ -56,7 +55,7 @@ namespace pretty
 	template<class F, class Tuple>
 	constexpr decltype(auto) apply_adl(F&& f, Tuple&& t);
 
-	template<size_t Index = 1, tuple T>
+	template<size_t Index , tuple T>
 	constexpr bool elements_have_same_size(T const& t);
 
 	template<class T>
